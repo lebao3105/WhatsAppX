@@ -74,11 +74,8 @@ let presences = {};
 let reInitializeCount = 1;
 
 // Constants
-const SERVER_CONFIG = {
-    HOST: "192.168.40.30",
-    PORT: 7400,
-    HTTP_PORT: 7401
-};
+const configPath = path.join(__dirname, "config.json");
+const SERVER_CONFIG = require(configPath);
 
 const TOKENS = {
     SERVER: "3qGT_%78Dtr|&*7ufZoO",

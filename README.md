@@ -16,6 +16,4 @@ This project is currently in beta. Please report bugs in bag-xml’s Discord ser
 - **Skal**: for the `WebP` framework
 - **Sen:te (SenteSA)**: for the `SenTestingKit` framework
 
-***
-
-This project is **not affiliated** with “WA for Legacy iOS” by Alwin Lubbers or Meta Labs Inc./WhatsApp Inc.
+This project is **NOT affiliated** with “WA for Legacy iOS” by Alwin Lubber, Meta Platforms Inc., or WhatsApp Inc.

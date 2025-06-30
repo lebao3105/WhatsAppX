@@ -10,6 +10,7 @@
 #import "AppDelegate.h"
 #import "JSONUtility.h"
 #import "AppDelegate.h"
+#import <UIKit/UIKit.h>
 
 @interface SetupViewController () <UIAlertViewDelegate>
 
@@ -74,66 +75,192 @@
     return (interfaceOrientation == UIInterfaceOrientationPortrait);
 }
 
-- (IBAction)infoBtnPressed {
-    // Create temporary UIViewController
-    UIViewController *webVC = [[UIViewController alloc] init];
-    webVC.view.frame = self.view.bounds;
-    webVC.view.backgroundColor = [UIColor whiteColor];
+- (void)dismissQRCodePopup {
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@/loggedInYet", [[NSUserDefaults standardUserDefaults] stringForKey:@"wspl-b-address"]]];
+    NSError *error = nil;
     
-    // Create and add the navigation bar
-    UINavigationBar *navBar = [[UINavigationBar alloc] initWithFrame:CGRectMake(0, 0, webVC.view.frame.size.width, 44)];
-    navBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    NSString *responseString = [NSString stringWithContentsOfURL:url
+                                                        encoding:NSUTF8StringEncoding
+                                                           error:&error];
+    if (error || responseString == nil) {
+        NSLog(@"Error fetching response: %@", error);
+    }
     
-    UINavigationItem *navItem = [[UINavigationItem alloc] initWithTitle:@"Info"];
+    responseString = [responseString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    NSLog(@"%@", responseString);
     
-    // Create dismiss button for nav bar (left side)
-    UIBarButtonItem *dismissButton = [[UIBarButtonItem alloc] initWithTitle:@"Dismiss"
-                                                                      style:UIBarButtonItemStyleDone
-                                                                     target:self
-                                                                     action:@selector(dismissWebVC:)];
-    navItem.leftBarButtonItem = dismissButton;
+    if ([responseString isEqualToString:@"false"]) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Not Paired"
+                                                        message:@"If you've scanned the code, please wait for it to pair."
+                                                       delegate:nil
+                                              cancelButtonTitle:@"OK"
+                                              otherButtonTitles:nil];
+        [alert show];
+        [alert release];
+        
+    } else if ([responseString isEqualToString:@"true"]) {
+        // go to data sync screen, and set nsuserdefaults key as so
+        [[NSUserDefaults standardUserDefaults] setObject:@"" forKey:@"setupStage1"];
+
+        [self dismissModalViewControllerAnimated:YES];
+    } else {
+        NSLog(@"Invalid response string: %@", responseString);
+    }
     
-    [navBar setItems:[NSArray arrayWithObject:navItem]];
-    
-    [webVC.view addSubview:navBar];
-    
-    [navItem release];
-    [dismissButton release];
-    [navBar release];
-    
-    CGRect scrollFrame = webVC.view.bounds;
-    scrollFrame.origin.y += 44;       // below nav bar
-    scrollFrame.size.height -= 44;    // reduce height by nav bar height
-    
-    UIScrollView *scrollView = [[UIScrollView alloc] initWithFrame:scrollFrame];
-    scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    
-    UILabel *textLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, 10, scrollFrame.size.width - 20, 0)];
-    textLabel.numberOfLines = 0;
-    textLabel.lineBreakMode = UILineBreakModeWordWrap;
-    textLabel.font = [UIFont systemFontOfSize:14];
-    textLabel.text = @"WhatsApp's Terms Of Service forbidding users to reverse enginner clients.\n\nThe server uses the library \"whatsapp-web.js\" to connect your WhatsApp account.\nThe library works by launching the WhatsApp Web browser application and managing it, thereby mitigating the risk of being blocked.\n\nThe only risk of being blocked can happen if you re-link the server to your account numerous times by scanning the QR code. If you already have it linked once, you will be fine. Just be sure to wait a day or two in between re-linking the server in order to not be flagged.";
-    
-    [textLabel sizeToFit];
-    
-    scrollView.contentSize = CGSizeMake(scrollFrame.size.width, textLabel.frame.size.height + 20);
-    
-    [scrollView addSubview:textLabel];
-    
-    [webVC.view addSubview:scrollView];
-    
-    [textLabel release];
-    [scrollView release];
-    
-    webVC.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
-    
-    [self presentModalViewController:webVC animated:YES];
-    [webVC release];
+    //[self dismissModalViewControllerAnimated:YES];
 }
 
-// Helper method for dismiss button
-- (void)dismissWebVC:(id)sender {
-    [self dismissModalViewControllerAnimated:YES];
+- (void)showQRCodeFromEndpoint {
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@/qr", [[NSUserDefaults standardUserDefaults] stringForKey:@"wspl-b-address"]]];
+    
+    NSError *error = nil;
+    NSString *responseString = [NSString stringWithContentsOfURL:url encoding:NSUTF8StringEncoding error:&error];
+    
+    if (error || responseString == nil) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error"
+                                                        message:@"Failed to load QR code."
+                                                       delegate:nil
+                                              cancelButtonTitle:@"OK"
+                                              otherButtonTitles:nil];
+        [alert show];
+        [alert release];
+        return;
+    }
+    
+    NSString *prefix = @"data:image/png;base64,";
+    if ([responseString hasPrefix:prefix]) {
+        NSString *base64String = [responseString substringFromIndex:[prefix length]];
+        NSData *imageData = [self dataFromBase64String:base64String];
+        
+        if (imageData == nil) {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error"
+                                                            message:@"Failed to decode QR code."
+                                                           delegate:nil
+                                                  cancelButtonTitle:@"OK"
+                                                  otherButtonTitles:nil];
+            [alert show];
+            [alert release];
+            return;
+        }
+        
+        UIImage *qrImage = [UIImage imageWithData:imageData];
+        if (!qrImage) {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error"
+                                                            message:@"Invalid QR image data."
+                                                           delegate:nil
+                                                  cancelButtonTitle:@"OK"
+                                                  otherButtonTitles:nil];
+            [alert show];
+            [alert release];
+            return;
+        }
+        
+        // Create a popup view controller
+        UIViewController *popupVC = [[UIViewController alloc] init];
+        popupVC.view.backgroundColor = [UIColor whiteColor];
+        
+        CGRect screenBounds = [[UIScreen mainScreen] bounds];
+        CGFloat screenWidth = screenBounds.size.width;
+        CGFloat screenHeight = screenBounds.size.height;
+        
+        // Make QR image take up full width, and square (width = height)
+        CGFloat qrSize = screenWidth;
+        UIImageView *imageView = [[UIImageView alloc] initWithImage:qrImage];
+        imageView.frame = CGRectMake(0, 0, qrSize, qrSize);
+        imageView.contentMode = UIViewContentModeScaleAspectFit;
+        [popupVC.view addSubview:imageView];
+        [imageView release];
+        
+        // Add a button neatly below the image
+        UIButton *closeButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+        CGFloat buttonWidth = screenWidth - 40.0; // 20pt padding on both sides
+        CGFloat buttonHeight = 44.0;
+        CGFloat buttonY = CGRectGetMaxY(imageView.frame) + 20.0;
+        closeButton.frame = CGRectMake((screenWidth - buttonWidth) / 2, buttonY, buttonWidth, buttonHeight);
+        
+        [closeButton setTitle:@"Check for Authentication" forState:UIControlStateNormal];
+        closeButton.titleLabel.font = [UIFont boldSystemFontOfSize:16];
+        closeButton.layer.cornerRadius = 8.0;
+        closeButton.layer.borderWidth = 1.0;
+        closeButton.layer.borderColor = [[UIColor grayColor] CGColor];
+        [closeButton addTarget:self action:@selector(dismissQRCodePopup) forControlEvents:UIControlEventTouchUpInside];
+        [popupVC.view addSubview:closeButton];
+        
+        [self presentModalViewController:popupVC animated:YES];
+        [popupVC release];
+        
+    } else {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error"
+                                                        message:@"Unexpected QR code format."
+                                                       delegate:nil
+                                              cancelButtonTitle:@"OK"
+                                              otherButtonTitles:nil];
+        [alert show];
+        [alert release];
+    }
+}
+
+// Base64 modified decoder for iOS 3 (from http://www.cocoadev.com/index.pl?BaseSixtyFour)
+- (NSData *)dataFromBase64String:(NSString *)aString {
+    const char *characters = [aString cStringUsingEncoding:NSASCIIStringEncoding];
+    if (characters == NULL) // Not ASCII string
+        return nil;
+    size_t length = strlen(characters);
+    
+    static char decodingTable[256];
+    static BOOL tableInitialized = NO;
+    const char CHAR64_PAD = '=';
+    const char CHAR64_INVALID = 64; // invalid marker
+    
+    if (!tableInitialized) {
+        for (int i = 0; i < 256; i++) {
+            decodingTable[i] = CHAR64_INVALID; // invalid
+        }
+        for (int i = 'A'; i <= 'Z'; i++) {
+            decodingTable[i] = i - 'A';
+        }
+        for (int i = 'a'; i <= 'z'; i++) {
+            decodingTable[i] = i - 'a' + 26;
+        }
+        for (int i = '0'; i <= '9'; i++) {
+            decodingTable[i] = i - '0' + 52;
+        }
+        decodingTable[(unsigned)'+'] = 62;
+        decodingTable[(unsigned)'/'] = 63;
+        decodingTable[(unsigned)CHAR64_PAD] = 0;
+        tableInitialized = YES;
+    }
+    
+    NSMutableData *decoded = [NSMutableData dataWithLength:length];
+    if (decoded == nil)
+        return nil;
+    
+    size_t outIndex = 0;
+    int accumulator = 0;
+    int bitsCollected = 0;
+    
+    unsigned char *outputBytes = (unsigned char *)[decoded mutableBytes];
+    
+    for (size_t i = 0; i < length; i++) {
+        unsigned char c = characters[i];
+        char decodedValue = decodingTable[c];
+        
+        if (decodedValue == CHAR64_INVALID) {
+            // Skip invalid chars (whitespace, newlines)
+            continue;
+        }
+        
+        accumulator = (accumulator << 6) | decodedValue;
+        bitsCollected += 6;
+        
+        if (bitsCollected >= 8) {
+            bitsCollected -= 8;
+            outputBytes[outIndex++] = (accumulator >> bitsCollected) & 0xFF;
+        }
+    }
+    
+    [decoded setLength:outIndex];
+    return decoded;
 }
 
 
@@ -219,8 +346,11 @@
     sleep(5);
     if(appDelegate.serverConnect == (int*)2) {
         HUD.labelText = @"Syncing Messages";
-        [appDelegate.chatsViewController loadMessagesFirstTime];
-        [self executeAfterDelay];
+        NSLog(@"loading messages first time");
+        [self showQRCodeFromEndpoint];
+
+        //[appDelegate.chatsViewController loadMessagesFirstTime];
+        //[self executeAfterDelay];
 
     } else {
         appDelegate.serverConnect = 0;

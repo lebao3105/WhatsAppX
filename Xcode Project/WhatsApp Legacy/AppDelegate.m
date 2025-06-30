@@ -60,8 +60,7 @@
                                                  name:UIDeviceOrientationDidChangeNotification
                                                object:nil];*/
     
-    if([[NSUserDefaults standardUserDefaults] stringForKey:@"wspl-a-address"] != nil){
-
+    if([[NSUserDefaults standardUserDefaults] stringForKey:@"doneSetup"] != nil){
         NSLog(@"Connecting to TCP server");
         [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
         
@@ -79,6 +78,9 @@
 
         [self.tabBarController.view setFrame: [[UIScreen mainScreen] applicationFrame]];
         [self.window addSubview: self.tabBarController.view];
+        
+    } else if ([[NSUserDefaults standardUserDefaults] stringForKey:@"setupStage1"] != nil){
+        // sync data screen.
     } else {
         self.welcomeViewController = [[WelcomeViewController alloc] initWithNibName:@"WelcomeViewController" bundle:nil];
         [self.welcomeViewController.view setFrame: [[UIScreen mainScreen] applicationFrame]];

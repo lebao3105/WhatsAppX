@@ -1,6 +1,6 @@
 {
-    "HOST": "0.0.0.0",
-    "PORT": 7300,
-    "HTTP_PORT": 7301,
-    "CHROME_PATH": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+  "HOST": "0.0.0.0",
+  "PORT": 7300,
+  "HTTP_PORT": 7301,
+  "CHROME_PATH": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
 }

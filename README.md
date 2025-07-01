@@ -5,6 +5,12 @@
 </div>
 This project is currently in beta. Please report bugs in bag-xml’s Discord server -> `#whatsapp`. When reporting bugs, please give **as much detail as you can.** Simply writing “my app crashes” or “chats don’t pop up” won’t help me much in diagnosing the issue.
 
+## Starting the server
+- go to the server folder
+- launch the console and type npm install
+- next, npm start
+- after that, the server should be running
+
 ## Compilation for Windows
 - use the **npm install** -g pkg command
 - run **build.bat**

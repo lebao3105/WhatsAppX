@@ -1,7 +1,8 @@
-
+<div align="center">
+<img src="Xcode%20Project/WhatsApp%20Legacy/Images/logo_large.png" width=20% height=20%>
 # WhatsAppX
 WhatsApp client and server source for iOS 5+, with planned support for iOS 3 & 4.  
-
+</div>
 This project is currently in beta. Please report bugs in bag-xml’s Discord server -> `#whatsapp`. When reporting bugs, please give **as much detail as you can.** Simply writing “my app crashes” or “chats don’t pop up” won’t help me much in diagnosing the issue.
 
 ## Compilation for Windows

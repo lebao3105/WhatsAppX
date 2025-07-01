@@ -24,6 +24,7 @@ This project is currently in beta. Please report bugs in bag-xml’s Discord ser
 
 ## Developers
 <img src="Xcode%20Project/WhatsApp%20Legacy/Images/pfp.jpeg" width=2% height=2%> - calvink19
+<br>
 <img src="https://cdn.discordapp.com/avatars/274765047342039040/71631003d16f8893dc72f789c1c992d6.png" width=2% height=2%> - zemonkamin
 
 This project is **NOT affiliated** with “WA for Legacy iOS” by Alwin Lubbers, Meta Platforms Inc., or WhatsApp Inc.

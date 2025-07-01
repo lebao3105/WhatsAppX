@@ -1,9 +1,10 @@
 <div align="center">
 <img src="Xcode%20Project/WhatsApp%20Legacy/Images/logo_large.png" width=20% height=20%>
 <h1>WhatsAppX</h1>
-</div>
 
 This project is currently in beta. Please report bugs in bag-xml’s Discord server -> `#whatsapp`. When reporting bugs, please give **as much detail as you can.** Simply writing “my app crashes” or “chats don’t pop up” won’t help much in diagnosing the issue.
+
+</div>
 
 ## Compilation for Windows
 - In the server folder, enter `npm install -g pkg`
@@ -14,7 +15,7 @@ This project is currently in beta. Please report bugs in bag-xml’s Discord ser
 
 ## Special thanks to...
 - **Gian Luca Russo**: the original developer of this project
-- **Zemonkamin**: improved much of the server code, such as fixing voice notes and video messages
+- **Zemonkamin**: improved much of the server code (such as fixing voice notes and video messages) and creating a windows mobile client
 - **saturngod**: for the `tcpSocketChat` library
 - **John Engelhart**: for the `JSONKit` library
 - **Dustin Voss** & **Deusty Designs**: for the `AsyncSocket` library

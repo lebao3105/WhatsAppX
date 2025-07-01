@@ -23,7 +23,7 @@ This project is currently in beta. Please report bugs in bag-xml’s Discord ser
 - **Sen:te (SenteSA)**: for the `SenTestingKit` framework
 
 ## Developers
-<img src="Xcode%20Project/WhatsApp%20Legacy/Images/pfp.jpeg" width=10% height=10%> - calvink19
+<img src="Xcode%20Project/WhatsApp%20Legacy/Images/pfp.jpeg" width=2% height=2%> - calvink19
 
 
 This project is **NOT affiliated** with “WA for Legacy iOS” by Alwin Lubbers, Meta Platforms Inc., or WhatsApp Inc.

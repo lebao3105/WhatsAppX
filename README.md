@@ -4,6 +4,11 @@ WhatsApp client and server source for iOS 5+, with planned support for iOS 3 & 4
 
 This project is currently in beta. Please report bugs in bag-xml’s Discord server -> `#whatsapp`. When reporting bugs, please give **as much detail as you can.** Simply writing “my app crashes” or “chats don’t pop up” won’t help me much in diagnosing the issue.
 
+## Compilation for Windows
+- use the **npm install** -g pkg command
+- run **build.bat**
+- download the compiled ffmpeg
+- create an ffmpeg folder in the folder with the compiled NodeJS code (app.exe) and transfer the previously downloaded exe with its dependencies to it
 
 ## Special thanks to..
 - **Gian Luca Russo**: the original developer of this project

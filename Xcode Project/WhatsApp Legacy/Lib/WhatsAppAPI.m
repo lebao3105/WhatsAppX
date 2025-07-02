@@ -25,9 +25,9 @@ NSString * const WSPInfoType_toString[] = {
     [DEFAULT] = @"Hey, I'm using WhatsApp",
     [AVAILABLE] = @"Available",
     [BUSY] = @"Busy",
-    [INSCHOOL] = @"At school",
+    [INSCHOOL] = @"In school",
     [INCINEMA] = @"At the Cinema",
-    [INWORK] = @"At work",
+    [INWORK] = @"At Work",
     [INGYM] = @"At the Gym",
     [INREUNION] = @"In a Reunion",
     [LOWBATTERY] = @"Low Battery",
@@ -147,10 +147,22 @@ NSString * const WSPMsgMediaType_toString[] = {
 }
 
 + (void)fetchMessagesfromNumberAsync:(NSString *)contactNumber isGroup:(BOOL)isGroup light:(BOOL)light {
+
     [self sendSeenfromNumber:contactNumber isGroup:isGroup];
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     if(appDelegate.chatSocket.isConnected == YES && [CocoaFetch connectedToServers]){
         [JSONFetcher fetchJSON:[NSString stringWithFormat:@"%@/getChatMessages/%@?isGroup=%i&isLight=0", [[NSUserDefaults standardUserDefaults] stringForKey:@"wspl-b-address"],contactNumber, (isGroup == true ? 1 : 0)] withMethod:@"POST" delegate:(light == YES ? nil: appDelegate.chatViewController)];
+    }
+}
+
++ (void)fetchMessagesfromNumberAsyncFirstTime:(NSString *)contactNumber isGroup:(BOOL)isGroup light:(BOOL)light delegate:(id)delegate {
+    NSLog(@"Delegate: %@", delegate);
+
+    [self sendSeenfromNumber:contactNumber isGroup:isGroup];
+    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    if(appDelegate.chatSocket.isConnected == YES && [CocoaFetch connectedToServers]){
+        id retainedDelegate = [delegate retain]; // retain the delegate
+        [JSONFetcher fetchJSON:[NSString stringWithFormat:@"%@/getChatMessages/%@?isGroup=%i&isLight=0", [[NSUserDefaults standardUserDefaults] stringForKey:@"wspl-b-address"], contactNumber, (isGroup ? 1 : 0)] withMethod:@"POST" delegate:retainedDelegate];
     }
 }
 

@@ -15,6 +15,7 @@
 #import "NewsViewController.h"
 #import "SetupViewController.h"
 #import "WelcomeViewController.h"
+#import "DataViewController.h"
 #import "VoiceNoteAPI.h"
 #import "JSBubbleView.h"
 #import "MBProgressHUD.h"
@@ -33,11 +34,15 @@
 
 @property (retain, nonatomic) ChatsViewController *chatsViewController;
 
-@property (assign, nonatomic) ChatViewController* chatViewController;
+@property (assign, nonatomic) ChatViewController *chatViewController;
 
 @property (retain, nonatomic) MyStatusViewController *myStatusViewController;
 
 @property (retain, nonatomic) NewsViewController *newsViewController;
+
+@property (nonatomic, retain) DataViewController *dataViewController;
+
+@property (nonatomic, retain) SetupViewController *setupViewController;
 
 @property (nonatomic,retain) tcpSocketChat* chatSocket;
 

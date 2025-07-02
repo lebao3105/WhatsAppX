@@ -67,12 +67,9 @@
     self.navigationItem.rightBarButtonItems = [NSArray arrayWithObjects:applyButton, deleteButton, nil];
 }
 
-
-
-
 - (IBAction)doneSetup:(id)sender {
     if((self.serverA.text.length == 0) || (self.serverB.text.length == 0)){
-        UIAlertView *alerta = [[UIAlertView alloc]initWithTitle:@"Error" message:@"Address is empty." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+        UIAlertView *alerta = [[UIAlertView alloc]initWithTitle:@"Error" message:@"A field is empty." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
         [alerta show];
     } else {
         NSString *urlString = serverA.text;
@@ -92,9 +89,9 @@
             [[NSUserDefaults standardUserDefaults] setObject:serverB.text forKey:@"wspl-b-address"];
             [[NSUserDefaults standardUserDefaults] setObject:serverAport.text forKey:@"wspl-a-port"];
             [[NSUserDefaults standardUserDefaults] synchronize];
-            NSLog(@"%@ . %i", self.serverAport.text, [[[NSUserDefaults standardUserDefaults] stringForKey:@"wspl-a-port"] intValue]);
+            //NSLog(@"%@ . %i", self.serverAport.text, [[[NSUserDefaults standardUserDefaults] stringForKey:@"wspl-a-port"] intValue]);
             
-            UIAlertView *alerta = [[UIAlertView alloc]initWithTitle:@"Applied" message:@"Restart the app." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            UIAlertView *alerta = [[UIAlertView alloc]initWithTitle:@"Applied" message:@"Please restart the app." delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
             [alerta show];
 
         } else {

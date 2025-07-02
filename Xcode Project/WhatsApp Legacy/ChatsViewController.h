@@ -11,7 +11,9 @@
 #import "JSONFetcher.h"
 
 @class AppDelegate;
-@interface ChatsViewController : UITableViewController <UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate, JSONFetcherDelegate>
+@interface ChatsViewController : UITableViewController <UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate, JSONFetcherDelegate> {
+    NSInteger pendingDownloads;
+}
 
 @property (assign, nonatomic) IBOutlet UISearchBar *searchBar;
 @property (retain, nonatomic) UIView *btnMetaAiView;
@@ -22,6 +24,8 @@
 @property BOOL isFiltered;
 @property int chatBadge;
 @property int unreadCount;
+
+@property (nonatomic) NSInteger pendingDownloads;
 
 -(void)reloadChats;
 -(void)loadMessagesFirstTime;

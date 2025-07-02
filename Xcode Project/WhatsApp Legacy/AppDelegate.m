@@ -12,6 +12,7 @@
 
 #import "SettingsViewController.h"
 #import "SetupViewController.h"
+#import "DataViewController.h"
 
 #import "MBProgressHUD.h"
 
@@ -20,7 +21,7 @@
 #define IS_RETINA ([[UIScreen mainScreen] respondsToSelector:@selector(displayLinkWithTarget:selector:)] && ([UIScreen mainScreen].scale >= 2.0))
 
 @implementation AppDelegate
-@synthesize chatSocket = _chatSocket, serverConnect, window, activeProfileView, chatViewController, contactsViewController, myStatusViewController, chatsViewController, newsViewController, welcomeViewController, tabBarController, profileImages, mediaImages, mediaAudios, voiceNoteManager, HUD, connectionTimeoutTimer;
+@synthesize chatSocket = _chatSocket, serverConnect, window, activeProfileView, chatViewController, contactsViewController, myStatusViewController, chatsViewController, newsViewController, welcomeViewController, tabBarController, profileImages, mediaImages, mediaAudios, voiceNoteManager, HUD, connectionTimeoutTimer, dataViewController, setupViewController;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
@@ -80,7 +81,9 @@
         [self.window addSubview: self.tabBarController.view];
         
     } else if ([[NSUserDefaults standardUserDefaults] stringForKey:@"setupStage1"] != nil){
-        // sync data screen.
+        self.setupViewController = [[SetupViewController alloc] initWithNibName:@"SetupViewController" bundle:nil];
+        [self.setupViewController.view setFrame: [[UIScreen mainScreen] applicationFrame]];
+        [self.window addSubview: self.setupViewController.view];
     } else {
         self.welcomeViewController = [[WelcomeViewController alloc] initWithNibName:@"WelcomeViewController" bundle:nil];
         [self.welcomeViewController.view setFrame: [[UIScreen mainScreen] applicationFrame]];

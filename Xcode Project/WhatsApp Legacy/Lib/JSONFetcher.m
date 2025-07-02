@@ -91,6 +91,8 @@
         [delegate fetcherDidFinishWithJSON:([json isEqual:[NSNull null]] ? nil : json)
                                      error:([error isEqual:[NSNull null]] ? nil : error)];
     }
+    
+    
 }
 
 @end

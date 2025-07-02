@@ -31,11 +31,11 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view from its nib.
     appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-    if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad ){
+    /*if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad ){
         self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"PaymentWPad.jpg"]];
     } else {
         self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"PaymentWP.jpg"]];
-    }
+    }*/
 }
 
 - (void)didReceiveMemoryWarning
@@ -52,7 +52,7 @@
     [UIView beginAnimations:nil context:nil];
     [UIView setAnimationDuration:0.5];
     
-    [UIView setAnimationTransition:UIModalTransitionStyleCrossDissolve forView:window cache:NO];
+    [UIView setAnimationTransition:UIModalTransitionStyleCoverVertical forView:window cache:NO];
     
     [setupViewController.view setFrame: [[UIScreen mainScreen] applicationFrame]];
     [window addSubview:setupViewController.view];

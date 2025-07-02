@@ -11,6 +11,10 @@
 		848FDA362DFE6B0400A5EA03 /* ServerViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 848FDA342DFE6B0400A5EA03 /* ServerViewController.xib */; };
 		849CCB372DFD24FC0020715F /* pfp.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 849CCB362DFD24FC0020715F /* pfp.jpeg */; };
 		849CCB392DFD282A0020715F /* vornext.png in Resources */ = {isa = PBXBuildFile; fileRef = 849CCB382DFD282A0020715F /* vornext.png */; };
+		849DB1632E1337A300E5601A /* DataViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 849DB1622E1337A300E5601A /* DataViewController.xib */; };
+		849DB1662E13388200E5601A /* DataViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 849DB1652E13388200E5601A /* DataViewController.m */; };
+		84A0D9C82E147B95009C8B37 /* QRCodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 84A0D9C62E147B95009C8B37 /* QRCodeViewController.m */; };
+		84A0D9C92E147B95009C8B37 /* QRCodeViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 84A0D9C72E147B95009C8B37 /* QRCodeViewController.xib */; };
 		C502D6912CBAD49400647D17 /* SetupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C52EC6572CBAD3EB00166FCB /* SetupViewController.m */; };
 		C503BA2E2C9CD60C00073EBD /* CGLContact.m in Sources */ = {isa = PBXBuildFile; fileRef = C503BA2B2C9CD60C00073EBD /* CGLContact.m */; };
 		C503BA2F2C9CD60C00073EBD /* CGLContactParser.m in Sources */ = {isa = PBXBuildFile; fileRef = C503BA2D2C9CD60C00073EBD /* CGLContactParser.m */; };
@@ -363,6 +367,12 @@
 		848FDA342DFE6B0400A5EA03 /* ServerViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ServerViewController.xib; sourceTree = "<group>"; };
 		849CCB362DFD24FC0020715F /* pfp.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = pfp.jpeg; sourceTree = "<group>"; };
 		849CCB382DFD282A0020715F /* vornext.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = vornext.png; sourceTree = "<group>"; };
+		849DB1622E1337A300E5601A /* DataViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DataViewController.xib; sourceTree = "<group>"; };
+		849DB1642E13388200E5601A /* DataViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataViewController.h; sourceTree = "<group>"; };
+		849DB1652E13388200E5601A /* DataViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DataViewController.m; sourceTree = "<group>"; };
+		84A0D9C52E147B95009C8B37 /* QRCodeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QRCodeViewController.h; sourceTree = "<group>"; };
+		84A0D9C62E147B95009C8B37 /* QRCodeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QRCodeViewController.m; sourceTree = "<group>"; };
+		84A0D9C72E147B95009C8B37 /* QRCodeViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = QRCodeViewController.xib; sourceTree = "<group>"; };
 		C503BA2A2C9CD60C00073EBD /* CGLContact.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGLContact.h; sourceTree = "<group>"; };
 		C503BA2B2C9CD60C00073EBD /* CGLContact.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CGLContact.m; sourceTree = "<group>"; };
 		C503BA2C2C9CD60C00073EBD /* CGLContactParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGLContactParser.h; sourceTree = "<group>"; };
@@ -815,6 +825,8 @@
 				C5CC8E002C93E3760042C299 /* SettingsViewController.xib */,
 				C52EC6592CBAD3F400166FCB /* SetupViewController.xib */,
 				C57DE8432C62DDD0007DBB7C /* WelcomeViewController.xib */,
+				849DB1622E1337A300E5601A /* DataViewController.xib */,
+				84A0D9C72E147B95009C8B37 /* QRCodeViewController.xib */,
 			);
 			name = VCXibs;
 			sourceTree = "<group>";
@@ -822,6 +834,8 @@
 		C51565242C559A210029E9AE /* VCHeadersModels */ = {
 			isa = PBXGroup;
 			children = (
+				849DB1642E13388200E5601A /* DataViewController.h */,
+				849DB1652E13388200E5601A /* DataViewController.m */,
 				848FDA322DFE6B0400A5EA03 /* ServerViewController.h */,
 				848FDA332DFE6B0400A5EA03 /* ServerViewController.m */,
 				C52EC6562CBAD3EB00166FCB /* SetupViewController.h */,
@@ -852,6 +866,8 @@
 				C5CC8DFF2C93E3760042C299 /* SettingsViewController.m */,
 				C57DE8412C62DDD0007DBB7C /* WelcomeViewController.h */,
 				C57DE8422C62DDD0007DBB7C /* WelcomeViewController.m */,
+				84A0D9C52E147B95009C8B37 /* QRCodeViewController.h */,
+				84A0D9C62E147B95009C8B37 /* QRCodeViewController.m */,
 			);
 			name = VCHeadersModels;
 			sourceTree = "<group>";
@@ -1682,6 +1698,8 @@
 				849CCB372DFD24FC0020715F /* pfp.jpeg in Resources */,
 				849CCB392DFD282A0020715F /* vornext.png in Resources */,
 				848FDA362DFE6B0400A5EA03 /* ServerViewController.xib in Resources */,
+				849DB1632E1337A300E5601A /* DataViewController.xib in Resources */,
+				84A0D9C92E147B95009C8B37 /* QRCodeViewController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1770,6 +1788,8 @@
 				C5FACFF72CCFAACD00804003 /* JSMessageAttachView.m in Sources */,
 				C5D057422CFFB8CF00532B37 /* LocationViewController.m in Sources */,
 				848FDA352DFE6B0400A5EA03 /* ServerViewController.m in Sources */,
+				849DB1662E13388200E5601A /* DataViewController.m in Sources */,
+				84A0D9C82E147B95009C8B37 /* QRCodeViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1877,7 +1897,7 @@
 				PRODUCT_NAME = WhatsApp;
 				SDKROOT = iphoneos5.0;
 				TARGETED_DEVICE_FAMILY = 1;
-				VALID_ARCHS = "armv6 armv7";
+				VALID_ARCHS = armv7;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -1897,7 +1917,7 @@
 				PRODUCT_NAME = WhatsApp;
 				SDKROOT = iphoneos5.0;
 				TARGETED_DEVICE_FAMILY = 1;
-				VALID_ARCHS = "armv6 armv7";
+				VALID_ARCHS = armv7;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -1954,7 +1974,7 @@
 				PRODUCT_NAME = WhatsApp;
 				SDKROOT = iphoneos5.0;
 				TARGETED_DEVICE_FAMILY = 1;
-				VALID_ARCHS = "armv6 armv7";
+				VALID_ARCHS = armv7;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug_armv6;

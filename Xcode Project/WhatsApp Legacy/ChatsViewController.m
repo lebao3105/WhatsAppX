@@ -28,7 +28,7 @@ alpha:1.0]
 @end
 
 @implementation ChatsViewController
-@synthesize isFiltered, appDelegate, searchBar, filteredChatList, chatBadge, chatList, groupList, unreadCount, btnMetaAiView;
+@synthesize isFiltered, appDelegate, searchBar, filteredChatList, chatBadge, chatList, groupList, unreadCount, btnMetaAiView, pendingDownloads;
 
 - (void)viewDidLoad
 {
@@ -347,49 +347,92 @@ alpha:1.0]
 }
 
 - (void)fetcherDidFinishWithJSON:(NSDictionary *)json error:(NSError *)error {
-    if (json){
+    static NSInteger totalDownloads = 0; // static so it keeps value between calls
+    
+    if ([json objectForKey:@"chatList"]) {
+        NSLog(@"Chat list received");
+        
         chatBadge = 0;
         unreadCount = 0;
         [CocoaFetch saveDictionaryToJSON:json withFileName:@"chatList"];
         self.chatList = [json objectForKey:@"chatList"];
         self.groupList = [json objectForKey:@"groupList"];
+        
         for (NSDictionary *chatItem in self.chatList) {
-            bool hasUnread = [[chatItem objectForKey:@"unreadCount"] integerValue] > 0;
             int unreadCountI = [[chatItem objectForKey:@"unreadCount"] integerValue];
             bool isMuted = [[chatItem objectForKey:@"muteExpiration"] integerValue] != 0;
-            if(hasUnread == true){
-                chatBadge++;
-            }
-            if(isMuted == false){
-                unreadCount = unreadCount + unreadCountI;
-            }
+            if (unreadCountI > 0) chatBadge++;
+            if (!isMuted) unreadCount += unreadCountI;
         }
-        if(chatBadge > 0){
-            NSString *badgeValue = [NSString stringWithFormat:@"%ld", (long)chatBadge];
-            [[self tabBarItem] setBadgeValue:badgeValue];
-        } else {
-            [[self tabBarItem] setBadgeValue:nil];
-        }
-        [[UIApplication sharedApplication] setApplicationIconBadgeNumber:unreadCount];
+        
+        if (chatBadge > 0)
+            self.tabBarItem.badgeValue = [NSString stringWithFormat:@"%ld", (long)chatBadge];
+        else
+            self.tabBarItem.badgeValue = nil;
+        
+        [UIApplication sharedApplication].applicationIconBadgeNumber = unreadCount;
         [self.tableView reloadData];
-        //[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+        
+        // Set totalDownloads when you get the chat list for the first time
+        totalDownloads = [self.chatList count];
+        
+    } else {
+        NSLog(@"Individual chat message download complete");
+        self.pendingDownloads--;
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"PendingDownloadsUpdated"
+                                                            object:nil
+                                                          userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                                    [NSNumber numberWithInt:self.pendingDownloads], @"pendingDownloads",
+                                                                    [NSNumber numberWithInt:totalDownloads], @"totalDownloads",
+                                                                    nil]];
+        NSLog(@"%i", self.pendingDownloads);
+        
+        if (self.pendingDownloads == 0) {
+            NSLog(@"All messages loaded.");
+            
+            [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"setupStage1"];
+            [[NSUserDefaults standardUserDefaults] synchronize];
+            
+            [[NSUserDefaults standardUserDefaults] setObject:@"" forKey:@"doneSetup"];
+            [[NSUserDefaults standardUserDefaults] synchronize];
+            
+            AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+            
+            for (UIView *subview in [appDelegate.window subviews]) {
+                [subview removeFromSuperview];
+            }
+            
+            appDelegate.tabBarController.view.frame = [[UIScreen mainScreen] applicationFrame];
+            appDelegate.window.rootViewController = appDelegate.tabBarController;
+            
+            [appDelegate.window makeKeyAndVisible];
+        }
     }
 }
 
 - (void)loadMessagesFirstTime {
-    //[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
-    for (NSDictionary *dic in self.chatList) {
-        bool isGroup = [[dic objectForKey:@"isGroup"] boolValue];
-        NSString* contactNumber = [[dic objectForKey:@"id"] objectForKey:@"user"];
-        [WhatsAppAPI fetchMessagesfromNumberAsync:contactNumber isGroup:isGroup light:false];
+    NSLog(@"Loading messages for the first time");
+    
+    if (self.chatList.count == 0) {
+        NSLog(@"chatList is empty. Will retry shortly...");
+        [self performSelector:@selector(loadMessagesFirstTime) withObject:nil afterDelay:0.5];
+        return;
     }
-    //[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
     
-    //UIAlertView *alerta = [[UIAlertView alloc]initWithTitle:@"Successfully connected" message:@"Please restart the app to let chats load properly." delegate:self cancelButtonTitle:@"Quit" otherButtonTitles:nil, nil];
-    //alerta.tag = 1001;
-    //[alerta show];
-    //[self viewDidLoad];
+    self.pendingDownloads = [self.chatList count];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"PendingDownloadsUpdated"
+                                                        object:nil
+                                                      userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                                [NSNumber numberWithInt:self.pendingDownloads], @"pendingDownloads",
+                                                                [NSNumber numberWithInt:self.pendingDownloads], @"totalDownloads",
+                                                                nil]];
     
+    for (NSDictionary *dic in self.chatList) {
+        BOOL isGroup = [[dic objectForKey:@"isGroup"] boolValue];
+        NSString *contactNumber = [[dic objectForKey:@"id"] objectForKey:@"user"];
+        [WhatsAppAPI fetchMessagesfromNumberAsyncFirstTime:contactNumber isGroup:isGroup light:NO delegate:self];
+    }
 }
 
 // Quit app after connection dialogue

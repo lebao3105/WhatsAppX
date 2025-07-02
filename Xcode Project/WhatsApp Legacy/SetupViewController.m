@@ -11,6 +11,9 @@
 #import "JSONUtility.h"
 #import "AppDelegate.h"
 #import <UIKit/UIKit.h>
+#import "DataViewController.h"
+#import "WhatsAppAPI.h"
+#import "QRCodeViewController.h"
 
 @interface SetupViewController () <UIAlertViewDelegate>
 
@@ -58,7 +61,7 @@
     [serverA setDelegate:self];
     [serverB setDelegate:self];
     [serverAport setDelegate:self];
-    self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"tableViewBackground.png"]];
+    //self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"tableViewBackground.png"]];
 }
 
 - (void)dealloc
@@ -99,10 +102,19 @@
         [alert release];
         
     } else if ([responseString isEqualToString:@"true"]) {
-        // go to data sync screen, and set nsuserdefaults key as so
-        [[NSUserDefaults standardUserDefaults] setObject:@"" forKey:@"setupStage1"];
+        AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
 
-        [self dismissModalViewControllerAnimated:YES];
+        [self dismissModalViewControllerAnimated:NO];
+        [[NSUserDefaults standardUserDefaults] setObject:@"" forKey:@"setupStage1"];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+        
+        DataViewController *dataVC = [[DataViewController alloc] initWithNibName:@"DataViewController" bundle:nil];
+        [self presentModalViewController:dataVC animated:NO];
+        [dataVC release];
+        
+        [WhatsAppAPI getChatListAsync];
+        [appDelegate.chatsViewController loadMessagesFirstTime];
+        
     } else {
         NSLog(@"Invalid response string: %@", responseString);
     }
@@ -155,48 +167,36 @@
             return;
         }
         
-        // Create a popup view controller
-        UIViewController *popupVC = [[UIViewController alloc] init];
-        popupVC.view.backgroundColor = [UIColor whiteColor];
-        
-        CGRect screenBounds = [[UIScreen mainScreen] bounds];
-        CGFloat screenWidth = screenBounds.size.width;
-        CGFloat screenHeight = screenBounds.size.height;
-        
-        // Make QR image take up full width, and square (width = height)
-        CGFloat qrSize = screenWidth;
-        UIImageView *imageView = [[UIImageView alloc] initWithImage:qrImage];
-        imageView.frame = CGRectMake(0, 0, qrSize, qrSize);
-        imageView.contentMode = UIViewContentModeScaleAspectFit;
-        [popupVC.view addSubview:imageView];
-        [imageView release];
-        
-        // Add a button neatly below the image
-        UIButton *closeButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-        CGFloat buttonWidth = screenWidth - 40.0; // 20pt padding on both sides
-        CGFloat buttonHeight = 44.0;
-        CGFloat buttonY = CGRectGetMaxY(imageView.frame) + 20.0;
-        closeButton.frame = CGRectMake((screenWidth - buttonWidth) / 2, buttonY, buttonWidth, buttonHeight);
-        
-        [closeButton setTitle:@"Check for Authentication" forState:UIControlStateNormal];
-        closeButton.titleLabel.font = [UIFont boldSystemFontOfSize:16];
-        closeButton.layer.cornerRadius = 8.0;
-        closeButton.layer.borderWidth = 1.0;
-        closeButton.layer.borderColor = [[UIColor grayColor] CGColor];
-        [closeButton addTarget:self action:@selector(dismissQRCodePopup) forControlEvents:UIControlEventTouchUpInside];
-        [popupVC.view addSubview:closeButton];
-        
-        [self presentModalViewController:popupVC animated:YES];
-        [popupVC release];
+        QRCodeViewController *qrVC = [[QRCodeViewController alloc] initWithNibName:@"QRCodeViewController" bundle:nil];
+        [qrVC setQRCodeImage:qrImage];
+        [self presentModalViewController:qrVC animated:YES];
+        [qrVC release];
         
     } else {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error"
-                                                        message:@"Unexpected QR code format."
-                                                       delegate:nil
-                                              cancelButtonTitle:@"OK"
-                                              otherButtonTitles:nil];
-        [alert show];
-        [alert release];
+        
+        if ([responseString isEqualToString:@"Success"]) {
+            NSLog(@"Server is logged in");
+            AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+            
+            [self dismissModalViewControllerAnimated:NO];
+            [[NSUserDefaults standardUserDefaults] setObject:@"" forKey:@"setupStage1"];
+            [[NSUserDefaults standardUserDefaults] synchronize];
+            
+            DataViewController *dataVC = [[DataViewController alloc] initWithNibName:@"DataViewController" bundle:nil];
+            [self presentModalViewController:dataVC animated:NO];
+            [dataVC release];
+            
+            [appDelegate.chatsViewController loadMessagesFirstTime];
+
+        } else {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error"
+                                                            message:@"Unexpected QR code format."
+                                                           delegate:nil
+                                                  cancelButtonTitle:@"OK"
+                                                  otherButtonTitles:nil];
+            [alert show];
+            [alert release];
+        }
     }
 }
 
@@ -345,11 +345,11 @@
     AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     sleep(5);
     if(appDelegate.serverConnect == (int*)2) {
-        HUD.labelText = @"Syncing Messages";
+        //HUD.labelText = @"Syncing Messages";
         NSLog(@"loading messages first time");
         [self showQRCodeFromEndpoint];
 
-        //[appDelegate.chatsViewController loadMessagesFirstTime];
+        //--[appDelegate.chatsViewController loadMessagesFirstTime];
         //[self executeAfterDelay];
 
     } else {

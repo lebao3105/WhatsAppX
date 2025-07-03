@@ -42,7 +42,7 @@
 					<object class="IBUIImageView" id="23041721">
 						<reference key="NSNextResponder" ref="191373211"/>
 						<int key="NSvFlags">277</int>
-						<string key="NSFrame">{{50, 54}, {220, 220}}</string>
+						<string key="NSFrame">{{50, 73}, {220, 220}}</string>
 						<reference key="NSSuperview" ref="191373211"/>
 						<reference key="NSNextKeyView" ref="133357171"/>
 						<string key="NSReuseIdentifierKey">_NS:9</string>
@@ -57,7 +57,7 @@
 					<object class="IBUILabel" id="133357171">
 						<reference key="NSNextResponder" ref="191373211"/>
 						<int key="NSvFlags">277</int>
-						<string key="NSFrame">{{20, 282}, {280, 64}}</string>
+						<string key="NSFrame">{{20, 301}, {280, 64}}</string>
 						<reference key="NSSuperview" ref="191373211"/>
 						<reference key="NSNextKeyView" ref="777184942"/>
 						<string key="NSReuseIdentifierKey">_NS:9</string>
@@ -94,7 +94,7 @@
 					<object class="IBUILabel" id="777184942">
 						<reference key="NSNextResponder" ref="191373211"/>
 						<int key="NSvFlags">274</int>
-						<string key="NSFrame">{{20, 354}, {280, 52}}</string>
+						<string key="NSFrame">{{20, 373}, {280, 52}}</string>
 						<reference key="NSSuperview" ref="191373211"/>
 						<reference key="NSNextKeyView"/>
 						<string key="NSReuseIdentifierKey">_NS:9</string>
@@ -136,13 +136,13 @@
 						<reference key="NSNextKeyView" ref="23041721"/>
 						<string key="NSReuseIdentifierKey">_NS:9</string>
 						<string key="targetRuntimeIdentifier">IBCocoaTouchFramework</string>
-						<int key="IBUIBarStyle">2</int>
+						<int key="IBUIBarStyle">1</int>
 						<array key="IBUIItems">
 							<object class="IBUINavigationItem" id="50345536">
 								<reference key="IBUINavigationBar" ref="555334769"/>
-								<string key="IBUITitle">Welcome</string>
+								<string key="IBUITitle">Setup</string>
 								<object class="IBUIBarButtonItem" key="IBUIRightBarButtonItem" id="151733663">
-									<string key="IBUITitle">Begin Setup</string>
+									<string key="IBUITitle">Next</string>
 									<string key="targetRuntimeIdentifier">IBCocoaTouchFramework</string>
 									<int key="IBUIStyle">2</int>
 									<reference key="IBUINavigationItem" ref="50345536"/>
@@ -4585,9 +4585,9 @@ AAgAAgAAAAIAAAAAAAgAAgAIAAEAAQABAAE</bytes>
 						<reference key="object" ref="191373211"/>
 						<array class="NSMutableArray" key="children">
 							<reference ref="23041721"/>
-							<reference ref="555334769"/>
-							<reference ref="777184942"/>
 							<reference ref="133357171"/>
+							<reference ref="777184942"/>
+							<reference ref="555334769"/>
 						</array>
 						<reference key="parent" ref="0"/>
 					</object>

@@ -68,6 +68,7 @@
 }
 
 - (void)updateProgress:(NSNotification *)notification {
+    NSLog(@"update progress notif");
     NSNumber *pending = [notification.userInfo objectForKey:@"pendingDownloads"];
     NSNumber *total = [notification.userInfo objectForKey:@"totalDownloads"];
     if (pending && total && [total intValue] > 0) {

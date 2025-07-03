@@ -139,6 +139,10 @@
         return;
     }
     
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // MOVE THIS CHECK TO QRCODEVIEWCONTROLLER.
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
     NSString *prefix = @"data:image/png;base64,";
     if ([responseString hasPrefix:prefix]) {
         NSString *base64String = [responseString substringFromIndex:[prefix length]];
@@ -177,17 +181,27 @@
         if ([responseString isEqualToString:@"Success"]) {
             NSLog(@"Server is logged in");
             AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-            
+                        
             [self dismissModalViewControllerAnimated:NO];
-            [[NSUserDefaults standardUserDefaults] setObject:@"" forKey:@"setupStage1"];
-            [[NSUserDefaults standardUserDefaults] synchronize];
             
-            DataViewController *dataVC = [[DataViewController alloc] initWithNibName:@"DataViewController" bundle:nil];
-            [self presentModalViewController:dataVC animated:NO];
-            [dataVC release];
+            // fuckery with view controllers
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.01 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+                
+                DataViewController *dataVC = [[DataViewController alloc] initWithNibName:@"DataViewController" bundle:nil];
+                dataVC.view.frame = [[UIScreen mainScreen] applicationFrame];
+                
+                [appDelegate.window addSubview:dataVC.view];
+                // appDelegate.window.rootViewController = dataVC;
+                
+                [dataVC release];
+                
+                [[NSUserDefaults standardUserDefaults] setObject:@"" forKey:@"setupStage1"];
+                [[NSUserDefaults standardUserDefaults] synchronize];
+                
+                [appDelegate.chatsViewController loadMessagesFirstTime];
+            });
             
-            [appDelegate.chatsViewController loadMessagesFirstTime];
-
         } else {
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Error"
                                                             message:@"Unexpected QR code format."

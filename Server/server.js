@@ -4,7 +4,8 @@ const {
     Client,
     RemoteAuth,
     MessageMedia,
-    LocalAuth
+    LocalAuth,
+    Events
 } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
 const net = require("net");
@@ -15,6 +16,7 @@ const path = require("path");
 const fs = require("fs");
 const os = require("os");
 const QRCode = require('qrcode');
+const { WEvent } = require('./types');
 const isPkg = typeof process.pkg !== 'undefined';
 const baseDir = isPkg ? path.dirname(process.execPath) : __dirname;
 let ffmpegPath = path.join(baseDir, 'ffmpeg', 'ffmpeg.exe');
@@ -40,6 +42,7 @@ ffmpeg.setFfmpegPath(ffmpegPath);
 
 // Initialize Express app
 const app = express();
+let appEvent;
 
 // Middleware setup
 app.use(express.json({ limit: "100mb" }));
@@ -284,6 +287,16 @@ function setupWhatsAppEventListeners(socket) {
                 }
             }));
         }
+        appEvent = new WEvent(Events.MESSAGE_RECEIVED, JSON.stringify(
+            {
+                sender: message.from,
+                author: message.author ? message.author.split("@")[0] : "",
+                body: {
+                    content: message.body,
+                    type: message.type
+                }
+            }
+        ));
     });
 
     client.on("message_ack", async (message, ack) => {
@@ -296,6 +309,14 @@ function setupWhatsAppEventListeners(socket) {
                 ack: ack
             }
         }));
+        appEvent = new WEvent(Events.MESSAGE_ACK, JSON.stringify(
+            {
+                sender: message.from,
+                author: message.author ? message.author.split("@")[0] : "",
+                id: message.id,
+                ack: ack
+            }
+        ));
     });
     
     client.on("message_revoke_me", async (message) => {
@@ -384,6 +405,10 @@ app.get("/qr", async (req, res) => {
     } else {
         res.send(global.qrDataUrl);
     }
+});
+
+app.get("/getUpdates", async (req, res) => {
+    res.send(appEvent.toJSON());
 });
 
 app.all("/getChats", async (req, res) => {

@@ -9,13 +9,13 @@ This project is currently in beta. Please report bugs in bag-xml’s Discord ser
 ## Compilation for Windows
 - In the server folder, enter `npm install -g pkg`
 - Run `build.bat`
-- Download the compiled `ffmpeg` executable
+- Download the compiled `ffmpeg` executable [here](https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-lgpl.zip)
 - Create an `ffmpeg` folder in the folder with the compiled NodeJS code (app.exe)
 - Transfer the previously downloaded `ffmpeg.exe`, and its dependencies, to the `ffmpeg` folder
 
 ## Special thanks to...
 - **Gian Luca Russo**: the original developer of this project
-- **Zemonkamin**: improved much of the server code (such as fixing voice notes and video messages) and creating a windows mobile client
+- **Zemonkamin**: improved much of the server code (such as fixing voice notes and video messages)
 - **saturngod**: for the `tcpSocketChat` library
 - **John Engelhart**: for the `JSONKit` library
 - **Dustin Voss** & **Deusty Designs**: for the `AsyncSocket` library

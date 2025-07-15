@@ -2,16 +2,34 @@
 <img src="Xcode%20Project/WhatsApp%20Legacy/Images/logo_large.png" width=20% height=20%>
 <h1>WhatsAppX</h1>
 
-This project is currently in beta. Please report bugs in bag-xml’s Discord server -> `#whatsapp`. When reporting bugs, please give **as much detail as you can.** Simply writing “my app crashes” or “chats don’t pop up” won’t help much in diagnosing the issue.
+This project is currently in beta. Please report bugs or ask for help in bag-xml’s Discord server -> `#whatsapp`. When reporting bugs or asking for help, please give **as much detail as you can.** Simply writing “my app crashes” or “chats don’t pop up” won’t help much in diagnosing the issue.
 
 </div>
 
-## Compilation for Windows
+## Compilation
+#### Windows
 - In the server folder, enter `npm install -g pkg`
 - Run `build.bat`
-- Download the compiled `ffmpeg` executable [here](https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-lgpl.zip)
+- Download the compiled `ffmpeg` executable [here](https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-lgpl.zip), an `x86_64` .EXE is linked
 - Create an `ffmpeg` folder in the folder with the compiled NodeJS code (app.exe)
-- Transfer the previously downloaded `ffmpeg.exe`, and its dependencies, to the `ffmpeg` folder
+- Transfer the previously downloaded `ffmpeg.exe` and its dependencies to the `ffmpeg` folder
+
+#### MacOS
+- In the server folder, enter `npm install -g pkg`
+- For Intel Macs, run `pkg . --targets node18-macos-x64 --output app-macos`
+- For Apple Silicon Macs, run `pkg . --targets node18-macos-arm64 --output app-macos-arm64`
+- Download the compiled `ffmpeg` executable [here](https://evermeet.cx/ffmpeg/). Make sure to download for the right architecture.
+- Create an `ffmpeg` folder in the folder with the compiled NodeJS code
+- Transfer the previously downloaded `ffmpeg` and its dependencies to the `ffmpeg` folder
+- Run with `./app-macos`.
+
+#### Linux
+- In the server folder, enter `npm install -g pkg`
+- Run `pkg . --targets node18-linux-x64 --output app-linux`
+- Download the compiled `ffmpeg` executable [here](https://johnvansickle.com/ffmpeg/). Make sure to download for the right architecture.
+- Create an `ffmpeg` folder in the folder with the compiled NodeJS code
+- Transfer the previously downloaded `ffmpeg` and its dependencies to the `ffmpeg` folder
+- Run with `./app-linux`.
 
 ## Special thanks to...
 - **Gian Luca Russo**: the original developer of this project

@@ -45,7 +45,7 @@ GET /loggedInYet
 - Use: Check if WhatsApp session is authenticated
 
 GET /qr
-- Returns: QR code data URL or "Success" if already logged in
+- Returns: QR code base64 data URL or "Success" if already logged in
 - Use: Get QR code for initial authentication
 
 2.2 Event Handling Endpoints
@@ -335,12 +335,6 @@ Error Messages:
   code: [ERROR_CODE],
   message: string
 }
-
-Common Error Codes:
-100 - Authentication failed
-101 - Invalid message format
-102 - Rate limit exceeded
-103 - Server busy
 
 3.5 Connection Management:
 

@@ -239,7 +239,7 @@ POST /setMute/:contactId/:muteLevel
 3.1 Connection Lifecycle:
 
 1. Connection Initiation:
-- Client connects to configured port (default: 3001)
+- Client connects to configured port
 - Server creates new socket instance
 - Server assigns unique client ID (IP:PORT combination)
 - Client added to connection queue

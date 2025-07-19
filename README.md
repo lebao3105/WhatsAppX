@@ -62,8 +62,6 @@ This project is currently in beta. Please report bugs or ask for help in bag-xml
   </tr>
 </table>
 
-***
-
 ## Disclaimers
 This project is **not affiliated** with “WA for Legacy iOS” by Alwin Lubbers, “Meta Platforms Inc.”, or “WhatsApp Inc.”
 

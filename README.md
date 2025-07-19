@@ -62,4 +62,15 @@ This project is currently in beta. Please report bugs or ask for help in bag-xml
   </tr>
 </table>
 
-This project is not affiliated with “WA for Legacy iOS” by Alwin Lubbers, Meta Platforms Inc., or WhatsApp Inc.
+***
+
+## Disclaimers
+This project is **not affiliated** with “WA for Legacy iOS” by Alwin Lubbers, “Meta Platforms Inc.”, or “WhatsApp Inc.”
+
+This is an **unofficial client** for WhatsApp and is **not affiliated with**, **endorsed by**, or **supported** by WhatsApp Inc. in any way.  
+By using this application, you acknowledge and agree that:
+- **You** are **solely responsible** for the **use** of **your WhatsApp account** with this app.
+- **I** (calvink19) assume **no responsibility** for **any actions** taken by _WhatsApp Inc._ against your account, including (but not limited to) suspension, banning, or data loss.
+
+**Use at your own risk!**  
+If you do not agree with these terms, **do not use this application.** A pop-up is also presented in the iOS application.

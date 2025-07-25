@@ -4,8 +4,7 @@ const {
     Client,
     RemoteAuth,
     MessageMedia,
-    LocalAuth,
-    Events
+    LocalAuth
 } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
 const net = require("net");
@@ -19,29 +18,6 @@ const QRCode = require('qrcode');
 const isPkg = typeof process.pkg !== 'undefined';
 const baseDir = isPkg ? path.dirname(process.execPath) : __dirname;
 let ffmpegPath = path.join(baseDir, 'ffmpeg', 'ffmpeg.exe');
-
-let eventQueue = [];
-// i personally dont have many people on whatsapp but i saw one person with 726 unread messages and wanted to be on the safe side
-// adjust as needed
-const MAX_QUEUE_SIZE = 1000;
-
-
-class WEvent {
-    constructor(event, data) {
-        this.event = event;
-        this.data = data;
-        this.timestamp = Date.now();
-    }
-
-    toJSON() {
-        return {
-            event: this.event,
-            data: this.data,
-            timestamp: this.timestamp
-        };
-    }
-}
-
 
 if (!fs.existsSync(ffmpegPath)) {
     try {
@@ -65,16 +41,16 @@ ffmpeg.setFfmpegPath(ffmpegPath);
 // Initialize Express app
 const app = express();
 
-/// Middleware setup
+// Middleware setup
 app.use(express.json({ limit: "100mb" }));
 app.use(express.urlencoded({ limit: "100mb", extended: true }));
 
 // Configure FFmpeg
 // ffmpeg.setFfmpegPath(ffmpegStatic); // Removed this in favor of env variable
 
-
 // WhatsApp Client configuration
-const SERVER_CONFIG = require("./config.json");
+const configPath = path.join(__dirname, "config.json");
+const SERVER_CONFIG = require(configPath);
 
 let clients = [];
 let queueClients = [];
@@ -230,171 +206,7 @@ async function generateVideoThumbnail(videoBuffer) {
     });
 }
 
-// Helper function to add events to queue
-function addToEventQueue(event, data) {
-    const eventObj = new WEvent(event, data);
-    eventQueue.push(eventObj);
-    if (eventQueue.length > MAX_QUEUE_SIZE) {
-        eventQueue.shift(); // Remove oldest event
-    }
-    console.log(`Added event: ${event}, Queue size: ${eventQueue.length}, Latest timestamp: ${eventObj.timestamp}`);
-}
-
-
-function setupGlobalWhatsAppEventListeners() {
-    console.log("[SETUP] Setting up global WhatsApp event listeners");
-    
-    client.on("message", async (message) => {
-        console.log("[WHATSAPP] Message received:", message.body);
-        
-        // Notify all connected sockets
-        clients.forEach(socket => {
-            if (message.broadcast === true) {
-                socket.write(JSON.stringify({
-                    sender: "wspl-server",
-                    response: "NEW_BROADCAST_NOTI"
-                }));
-            } else {
-                socket.write(JSON.stringify({
-                    sender: "wspl-server",
-                    response: "NEW_MESSAGE_NOTI",
-                    body: {
-                        msgBody: message.body,
-                        from: message.from.split("@")[0],
-                        author: message.author ? message.author.split("@")[0] : "",
-                        type: message.type
-                    }
-                }));
-            }
-        });
-        
-        // Add to global event queue
-        addToEventQueue("MESSAGE_RECEIVED", {
-            sender: message.from,
-            author: message.author ? message.author.split("@")[0] : "",
-            body: {
-                content: message.body,
-                type: message.type
-            },
-            timestamp: message.timestamp,
-            id: message.id._serialized
-        });
-    });
-
-    client.on("message_ack", async (message, ack) => {
-        console.log("[WHATSAPP] Message ACK:", message.id._serialized, "ACK:", ack);
-        
-        // Notify all connected sockets
-        clients.forEach(socket => {
-            socket.write(JSON.stringify({
-                sender: "wspl-server",
-                response: "ACK_MESSAGE",
-                body: {
-                    from: message.from.split("@")[0],
-                    msgId: message.id,
-                    ack: ack
-                }
-            }));
-        });
-        
-        // Add to global event queue
-        addToEventQueue("MESSAGE_ACK", {
-            sender: message.from,
-            author: message.author ? message.author.split("@")[0] : "",
-            id: message.id._serialized,
-            ack: ack
-        });
-    });
-    
-    client.on("message_revoke_me", async (message) => {
-        console.log("[WHATSAPP] Message revoked by me:", message.id._serialized);
-        
-        // Notify all connected sockets
-        clients.forEach(socket => {
-            socket.write(JSON.stringify({
-                sender: "wspl-server",
-                response: "REVOKE_MESSAGE"
-            }));
-        });
-        
-        // Add to global event queue
-        addToEventQueue("MESSAGE_REVOKED", {
-            messageId: message.id._serialized,
-            revokedBy: "me"
-        });
-    });
-    
-    client.on("message_revoke_everyone", async (message, revokedMessage) => {
-        console.log("[WHATSAPP] Message revoked by everyone:", message.id._serialized);
-        
-        // Notify all connected sockets
-        clients.forEach(socket => {
-            socket.write(JSON.stringify({
-                sender: "wspl-server",
-                response: "REVOKE_MESSAGE"
-            }));
-        });
-        
-        // Add to global event queue
-        addToEventQueue("MESSAGE_REVOKED", {
-            messageId: message.id._serialized,
-            revokedBy: "everyone"
-        });
-    });
-    
-    client.on("group_join", async (notification) => {
-        console.log("[WHATSAPP] Group join:", notification);
-        
-        // Notify all connected sockets
-        clients.forEach(socket => {
-            socket.write(JSON.stringify({
-                sender: "wspl-server",
-                response: "NEW_MESSAGE"
-            }));
-        });
-        
-        // Add to global event queue
-        addToEventQueue("GROUP_JOIN", notification);
-    });
-    
-    client.on("group_update", async (notification) => {
-        console.log("[WHATSAPP] Group update:", notification);
-        
-        // Notify all connected sockets
-        clients.forEach(socket => {
-            socket.write(JSON.stringify({
-                sender: "wspl-server",
-                response: "NEW_MESSAGE"
-            }));
-        });
-        
-        // Add to global event queue
-        addToEventQueue("GROUP_UPDATE", notification);
-    });
-    
-    client.on("chat_state_changed", ({ chatId, chatState }) => {
-        console.log("[WHATSAPP] Chat state changed:", chatId, chatState);
-        
-        // Notify all connected sockets
-        clients.forEach(socket => {
-            socket.write(JSON.stringify({
-                sender: "wspl-server",
-                response: "CONTACT_CHANGE_STATE",
-                body: {
-                    status: chatState,
-                    from: chatId.split("@")[0]
-                }
-            }));
-        });
-        
-        // Add to global event queue
-        addToEventQueue("CHAT_STATE_CHANGED", {
-            chatId: chatId,
-            state: chatState
-        });
-    });
-}
-
+// Socket server setup
 const socketServer = net.createServer((socket) => {
     socket.name = socket.remoteAddress + ":" + socket.remotePort;
     queueClients.push(socket);
@@ -406,8 +218,8 @@ const socketServer = net.createServer((socket) => {
         token: TOKENS.SERVER
     }));
     
-    // REMOVE THIS LINE - Don't set up event listeners per socket
-    // setupWhatsAppEventListeners(socket);
+    // Set up WhatsApp client event listeners for this socket
+    setupWhatsAppEventListeners(socket);
     
     // Handle socket data
     socket.on("data", (data) => {
@@ -450,6 +262,81 @@ const socketServer = net.createServer((socket) => {
     });
 });
 
+function setupWhatsAppEventListeners(socket) {
+    client.setMaxListeners(16);
+    
+    client.on("message", async (message) => {
+        if (message.broadcast === true) {
+            socket.write(JSON.stringify({
+                sender: "wspl-server",
+                response: "NEW_BROADCAST_NOTI"
+            }));
+        } else {
+            socket.write(JSON.stringify({
+                sender: "wspl-server",
+                // NEW_MESSAGE
+                response: "NEW_MESSAGE_NOTI",
+                body: {
+                    msgBody: message.body,
+                    from: message.from.split("@")[0],
+                    author: message.author ? message.author.split("@")[0] : "",
+                    type: message.type
+                }
+            }));
+        }
+    });
+
+    client.on("message_ack", async (message, ack) => {
+        socket.write(JSON.stringify({
+            sender: "wspl-server",
+            response: "ACK_MESSAGE",
+            body: {
+                from: message.from.split("@")[0],
+                msgId: message.id,
+                ack: ack
+            }
+        }));
+    });
+    
+    client.on("message_revoke_me", async (message) => {
+        socket.write(JSON.stringify({
+            sender: "wspl-server",
+            response: "REVOKE_MESSAGE"
+        }));
+    });
+    
+    client.on("message_revoke_everyone", async (message, revokedMessage) => {
+        socket.write(JSON.stringify({
+            sender: "wspl-server",
+            response: "REVOKE_MESSAGE"
+        }));
+    });
+    
+    client.on("group_join", async (notification) => {
+        socket.write(JSON.stringify({
+            sender: "wspl-server",
+            response: "NEW_MESSAGE"
+        }));
+    });
+    
+    client.on("group_update", async (notification) => {
+        socket.write(JSON.stringify({
+            sender: "wspl-server",
+            response: "NEW_MESSAGE"
+        }));
+    });
+    
+    client.on("chat_state_changed", ({ chatId, chatState }) => {
+        socket.write(JSON.stringify({
+            sender: "wspl-server",
+            response: "CONTACT_CHANGE_STATE",
+            body: {
+                status: chatState,
+                from: chatId.split("@")[0]
+            }
+        }));
+    });
+}
 
 global.loggedin = 0;
 global.qrDataUrl = null;
@@ -468,8 +355,6 @@ client.on("qr", async (qr) => {
 client.on("ready", () => {
     global.loggedin = 1;
     console.log("Server A and B are ready.");
-    
-    setupGlobalWhatsAppEventListeners();
 });
 
 client.on("disconnected", (reason) => {
@@ -500,136 +385,6 @@ app.get("/qr", async (req, res) => {
         res.send(global.qrDataUrl);
     }
 });
-
-// Fixed /getUpdates endpoint
-app.get("/getUpdates", async (req, res) => {
-    try {
-        const since = parseInt(req.query.since) || 0;
-        console.log(`[GET UPDATES] Called with since: ${since}`);
-        console.log(`[GET UPDATES] Current queue size: ${eventQueue.length}`);
-        
-        // Filter events that are newer than the 'since' timestamp
-        const events = eventQueue.filter(e => e.timestamp > since);
-        
-        console.log(`[GET UPDATES] Found ${events.length} events since ${since}`);
-        
-        // Get the latest timestamp from the queue
-        const latest = eventQueue.length > 0 ? 
-            Math.max(...eventQueue.map(e => e.timestamp)) : 
-            Date.now();
-        
-        const response = {
-            events: events.map(e => e.toJSON()),
-            latest: latest,
-            queueSize: eventQueue.length, // Add for debugging
-            since: since // Add for debugging
-        };
-        
-        console.log(`[GET UPDATES] Returning ${response.events.length} events, latest: ${response.latest}`);
-        res.json(response);
-    } catch (error) {
-        console.error("[GET UPDATES] Error:", error);
-        res.status(500).json({ 
-            error: error.message,
-            events: [],
-            latest: Date.now()
-        });
-    }
-});
-
-
-// polling-based approach
-app.get("/getUpdatesPolling", async (req, res) => {
-    try {
-        const since = parseInt(req.query.since) || 0;
-        const timeout = parseInt(req.query.timeout) || 5000; // 5 seconds default
-        const startTime = Date.now();
-        
-        // Function to check for new events
-        const checkForEvents = () => {
-            const events = eventQueue.filter(e => e.timestamp > since);
-            return events.length > 0;
-        };
-        
-        // If we have events immediately, return them
-        if (checkForEvents()) {
-            const events = eventQueue.filter(e => e.timestamp > since);
-            const latest = eventQueue.length > 0 ? 
-                Math.max(...eventQueue.map(e => e.timestamp)) : 
-                Date.now();
-            
-            return res.json({
-                events: events.map(e => e.toJSON()),
-                latest: latest
-            });
-        }
-        
-        // Otherwise, poll for events with timeout
-        const pollInterval = setInterval(() => {
-            if (checkForEvents() || (Date.now() - startTime) > timeout) {
-                clearInterval(pollInterval);
-                
-                const events = eventQueue.filter(e => e.timestamp > since);
-                const latest = eventQueue.length > 0 ? 
-                    Math.max(...eventQueue.map(e => e.timestamp)) : 
-                    Date.now();
-                
-                res.json({
-                    events: events.map(e => e.toJSON()),
-                    latest: latest
-                });
-            }
-        }, 1000); // Check every second
-        
-        // Cleanup on client disconnect
-        req.on('close', () => {
-            clearInterval(pollInterval);
-        });
-        
-    } catch (error) {
-        console.error("Error in getUpdatesPolling:", error);
-        res.status(500).json({ 
-            error: error.message,
-            events: [],
-            latest: Date.now()
-        });
-    }
-});
-
-// test endpoint to manually add events for debugging
-app.post("/testEvent", async (req, res) => {
-    addToEventQueue("TEST_EVENT", {
-        message: "This is a test event",
-        timestamp: Date.now()
-    });
-    res.json({ success: true, queueSize: eventQueue.length });
-});
-
-// endpoint to get current queue status
-app.get("/queueStatus", async (req, res) => {
-    res.json({
-        queueSize: eventQueue.length,
-        events: eventQueue.map(e => ({
-            event: e.event,
-            timestamp: e.timestamp
-        })),
-        latest: eventQueue.length > 0 ? 
-            Math.max(...eventQueue.map(e => e.timestamp)) : 
-            0
-    });
-});
-
-app.get("/clearQueue", (async (req, res) => {
-    try {
-        const previousSize = eventQueue.length;
-        eventQueue.length = 0;  // Clear the array without reassignment
-        console.log(`[CLEAR QUEUE] Queue cleared. Previous size: ${previousSize}`);
-        res.json({ success: true, message: "Queue cleared", previousQueueSize: previousSize, newQueueSize: 0 });
-    } catch (e) {
-        console.error("[CLEAR QUEUE] Error:", e);
-        res.status(500).json({ error: e.message });
-    }
-}));
 
 app.all("/getChats", async (req, res) => {
     try {
@@ -1023,62 +778,115 @@ app.all("/getVideoThumbnail/:mediaId", async (req, res) => {
 });
 
 app.post("/sendMessage/:contactId", async (req, res) => {
-    try {
-        const contactId = buildContactId(req.params.contactId, req.query.isGroup == 1);
-        const chat = await client.getChatById(contactId);
-        
-        // Handle text message
-        if (req.body.messageText) {
-            if (req.body.replyTo) {
-                const replyMessage = await client.getMessageById(req.body.replyTo);
-                await replyMessage.reply(req.body.messageText);
-            } else {
-                await chat.sendMessage(req.body.messageText);
-            }
-        }
-        
-        // Handle voice note
-        if (req.body.sendAsVoiceNote) {
-            const audioData = req.body.mediaBase64;
-            const audioBuffer = Buffer.from(audioData, "base64");
-            const tempAudioPath = path.join(os.tmpdir(), `temp_audio_${Date.now()}.caf`);
-            const convertedAudioPath = path.join(os.tmpdir(), `test_out_${Date.now()}.mp3`);
-            
-            fs.writeFileSync(tempAudioPath, audioBuffer);
-            
-            ffmpeg(tempAudioPath)
-                .toFormat("mp3")
-                .on("end", async () => {
-                    fs.unlinkSync(tempAudioPath);
-                    const media = await MessageMedia.fromFilePath(convertedAudioPath);
-                    await chat.sendMessage(media, { sendAudioAsVoice: true });
-                    fs.unlinkSync(convertedAudioPath);
-                })
-                .on("error", (error) => {
-                    console.error("Error during conversion:", error);
-                })
-                .save(convertedAudioPath);
-        }
-        
-        // Handle photo
-        if (req.body.sendAsPhoto) {
-            const imageData = req.body.mediaBase64;
-            const imageBuffer = Buffer.from(imageData, "base64");
-            const tempImagePath = path.join(os.tmpdir(), `temp_img_${Date.now()}.jpg`);
-            
-            fs.writeFileSync(tempImagePath, imageBuffer);
-            const media = await MessageMedia.fromFilePath(tempImagePath);
-            await chat.sendMessage(media);
-            fs.unlinkSync(tempImagePath);
-        }
-        
-        res.status(200).json({ response: "ok" });
-    } catch (error) {
-        if (!res.headersSent) {
-            res.status(500).send(error.message);
-        }
+  try {
+    const isGroup = req.query.isGroup == 1;
+    const contactId = buildContactId(req.params.contactId, isGroup);
+    const chat = await client.getChatById(contactId);
+
+    // Send text message (optionally as reply)
+    if (req.body.messageText) {
+      if (req.body.replyTo) {
+        const quoted = await client.getMessageById(req.body.replyTo);
+        await quoted.reply(req.body.messageText);
+      } else {
+        await chat.sendMessage(req.body.messageText);
+      }
     }
+
+    // Send voice note
+    if (req.body.sendAsVoiceNote) {
+      const base64 = req.body.mediaBase64;
+      const inputPath = path.join(os.tmpdir(), `temp_audio_${Date.now()}.caf`);
+      const outputPath = path.join(os.tmpdir(), `temp_audio_out_${Date.now()}.mp3`);
+      fs.writeFileSync(inputPath, Buffer.from(base64, "base64"));
+
+      ffmpeg(inputPath)
+        .toFormat("mp3")
+        .on("end", async () => {
+          fs.unlinkSync(inputPath);
+          const media = await MessageMedia.fromFilePath(outputPath);
+          await chat.sendMessage(media, { sendAudioAsVoice: true });
+          fs.unlinkSync(outputPath);
+        })
+        .on("error", (err) => {
+          console.error("Error during voice conversion:", err);
+        })
+        .save(outputPath);
+    }
+
+    // Send photo
+    if (req.body.sendAsPhoto) {
+      const base64 = req.body.mediaBase64;
+      const imagePath = path.join(os.tmpdir(), `temp_img_${Date.now()}.jpg`);
+      fs.writeFileSync(imagePath, Buffer.from(base64, "base64"));
+      const media = await MessageMedia.fromFilePath(imagePath);
+      await chat.sendMessage(media);
+      fs.unlinkSync(imagePath);
+    }
+
+    // Send Video
+    /*
+    base64 -i /Users/calvink/Desktop/video.mp4 | tr -d '\n' > tmp.b64
+
+    jq -Rs --argjson sendAsVideo true '{sendAsVideo: $sendAsVideo, mediaBase64: .}' tmp.b64 > tmp.json
+
+    curl -X POST http://localhost:7301/sendMessage/1xxxxxxxxxx \
+      -H "Content-Type: application/json" \
+      --data-binary @tmp.json
+    */
+    if (req.body.sendAsVideo) {
+      const base64 = req.body.mediaBase64;
+      const buffer = Buffer.from(base64, "base64");
+      const videoPath = path.join(os.tmpdir(), `video_${Date.now()}.mp4`);
+      fs.writeFileSync(videoPath, buffer);
+      const media = await MessageMedia.fromFilePath(videoPath);
+      await chat.sendMessage(media);
+      fs.unlinkSync(videoPath);
+    }
+
+    // Send sticker
+    /*
+    BASE64=$(base64 -i /Users/calvink/Desktop/sticker.png | tr -d '\n'
+    curl -X POST http://localhost:7301/sendMessage/1xxxxxxxxxx \
+     -H "Content-Type: application/json" \
+     -d "{\"mediaBase64\":\"$BASE64\",\"sendAsSticker\":true}"
+    */
+    if (req.body.sendAsSticker) {
+      const base64 = req.body.mediaBase64;
+      const inputImagePath = path.join(os.tmpdir(), `sticker_input_${Date.now()}.png`);
+      const outputWebpPath = path.join(os.tmpdir(), `sticker_output_${Date.now()}.webp`);
+      fs.writeFileSync(inputImagePath, Buffer.from(base64, "base64"));
+
+      await new Promise((resolve, reject) => {
+        ffmpeg(inputImagePath)
+          .outputOptions([
+            "-vcodec", "libwebp",
+            "-vf", "scale=512:512:force_original_aspect_ratio=decrease,fps=15",
+            "-lossless", "1",
+            "-preset", "default",
+            "-loop", "0",
+            "-an",
+            "-vsync", "0"
+          ])
+          .toFormat("webp")
+          .on("end", resolve)
+          .on("error", reject)
+          .save(outputWebpPath);
+      });
+
+      const stickerMedia = await MessageMedia.fromFilePath(outputWebpPath);
+      await chat.sendMessage(stickerMedia, { sendMediaAsSticker: true });
+
+      fs.unlinkSync(inputImagePath);
+      fs.unlinkSync(outputWebpPath);
+    }
+
+    res.status(200).json({ response: "ok" });
+  } catch (err) {
+    if (!res.headersSent) res.status(500).send(err.message);
+  }
 });
+
 
 app.post("/setMute/:contactId/:muteLevel", async (req, res) => {
     try {
@@ -1244,6 +1052,16 @@ app.post("/deleteMessage/:messageId/:everyone", async (req, res) => {
         if (!res.headersSent) {
             res.status(500).send(error.message);
         }
+    }
+});
+
+app.all("/logout", async (req, res) => {
+    try {
+        console.log("Logging out.");
+        client.logout();
+        res.status(200).send("Success");
+    } catch (error) {
+        res.status(500).send("Failed to logout: " + error.message);
     }
 });
 

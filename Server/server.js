@@ -42,15 +42,17 @@ ffmpeg.setFfmpegPath(ffmpegPath);
 const app = express();
 
 // Middleware setup
-app.use(express.json({ limit: "100mb" }));
-app.use(express.urlencoded({ limit: "100mb", extended: true }));
+app.use(express.json({ limit: "16mb" }));
+app.use(express.urlencoded({ limit: "16mb", extended: true }));
 
 // Configure FFmpeg
 // ffmpeg.setFfmpegPath(ffmpegStatic); // Removed this in favor of env variable
 
 // WhatsApp Client configuration
 const configPath = path.join(__dirname, "config.json");
-const SERVER_CONFIG = require(configPath);
+// No cache!!
+const loadConfig = () => JSON.parse(fs.readFileSync(configPath, "utf8"));
+const SERVER_CONFIG = loadConfig();
 
 let clients = [];
 let queueClients = [];
@@ -847,6 +849,7 @@ app.post("/sendMessage/:contactId", async (req, res) => {
     // Send sticker
     /*
     BASE64=$(base64 -i /Users/calvink/Desktop/sticker.png | tr -d '\n'
+
     curl -X POST http://localhost:7301/sendMessage/1xxxxxxxxxx \
      -H "Content-Type: application/json" \
      -d "{\"mediaBase64\":\"$BASE64\",\"sendAsSticker\":true}"

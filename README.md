@@ -49,7 +49,10 @@ This project is currently in beta. Please report bugs or ask for help in bag-xml
       <img src="Xcode%20Project/WhatsApp%20Legacy/Images/pfp.jpeg" style="width:60px; height:60px; border-radius:50%;">
     </td>
     <td style="vertical-align: middle; padding-left: 12px; font-size: 16px;">
-      calvink19 (iOS client, server)
+      calvink19
+    </td>
+    <td style="vertical-align: middle; padding-left: 12px; font-size: 16px;">
+      iOS client, Server
     </td>
   </tr>
   <tr>
@@ -57,9 +60,13 @@ This project is currently in beta. Please report bugs or ask for help in bag-xml
       <img src="https://cdn.discordapp.com/avatars/274765047342039040/71631003d16f8893dc72f789c1c992d6.png" style="width:60px; height:60px; border-radius:50%;">
     </td>
     <td style="vertical-align: middle; padding-left: 12px; font-size: 16px;">
-      zemonkamin (WP client, server)
+      zemonkamin
+    </td>
+    <td style="vertical-align: middle; padding-left: 12px; font-size: 16px;">
+      Server
     </td>
   </tr>
+
 </table>
 
 ## Disclaimers

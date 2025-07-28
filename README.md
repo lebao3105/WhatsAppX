@@ -63,7 +63,7 @@ This project is currently in beta. Please report bugs or ask for help in bag-xml
       zemonkamin
     </td>
     <td style="vertical-align: middle; padding-left: 12px; font-size: 16px;">
-      Server
+      Windows 10 mobile client, Windows Phone 8.1 client, Server
     </td>
   </tr>
 

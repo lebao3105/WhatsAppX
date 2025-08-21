@@ -214,11 +214,7 @@ app.get("/loggedInYet", (_, res) => {
 });
 
 app.get("/qr", async (_, res) => {
-  if (global.loggedin) {
-    res.send("Success");
-  } else {
-    res.send(global.qrDataUrl);
-  }
+  res.send(global.loggedin ? "Success" : global.qrDataUrl);
 });
 
 setUpListGetters(app, client);
@@ -487,7 +483,7 @@ app.post("/sendMessage/:contactId", async (req, res) => {
       const base64 = req.body.mediaBase64;
       const imagePath = path.join(os.tmpdir(), `temp_img_${Date.now()}.jpg`);
       fs.writeFileSync(imagePath, Buffer.from(base64, "base64"));
-      const media = await MessageMedia.fromFilePath(imagePath);
+      const media = MessageMedia.fromFilePath(imagePath);
       await chat.sendMessage(media);
       fs.unlinkSync(imagePath);
     }
@@ -507,7 +503,7 @@ app.post("/sendMessage/:contactId", async (req, res) => {
       const buffer = Buffer.from(base64, "base64");
       const videoPath = path.join(os.tmpdir(), `video_${Date.now()}.mp4`);
       fs.writeFileSync(videoPath, buffer);
-      const media = await MessageMedia.fromFilePath(videoPath);
+      const media = MessageMedia.fromFilePath(videoPath);
       await chat.sendMessage(media);
       fs.unlinkSync(videoPath);
     }
@@ -555,7 +551,7 @@ app.post("/sendMessage/:contactId", async (req, res) => {
           .save(outputWebpPath);
       });
 
-      const stickerMedia = await MessageMedia.fromFilePath(outputWebpPath);
+      const stickerMedia = MessageMedia.fromFilePath(outputWebpPath);
       await chat.sendMessage(stickerMedia, { sendMediaAsSticker: true });
 
       fs.unlinkSync(inputImagePath);
@@ -565,40 +561,6 @@ app.post("/sendMessage/:contactId", async (req, res) => {
     res.status(200).json({ response: "ok" });
   } catch (err) {
     if (!res.headersSent) res.status(500).send(err.message);
-  }
-});
-
-app.post("/setMute/:contactId/:muteLevel", async (req, res) => {
-  try {
-    const contactId = utils.buildContactId(
-      req.params.contactId,
-      req.query.isGroup === "1",
-    );
-    const chat = await client.getChatById(contactId);
-    const muteLevel = parseInt(req.params.muteLevel);
-
-    console.log(muteLevel);
-
-    switch (muteLevel) {
-      case -1:
-        await chat.unmute();
-        break;
-      case 0:
-        await chat.mute(new Date(0, 0, 0, 8)); // 8 hours
-        break;
-      case 1:
-        await chat.mute(new Date(0, 0, 7)); // 1 week
-        break;
-      case 2:
-        await chat.mute(); // Forever
-        break;
-    }
-
-    res.status(200).json({ response: "ok" });
-  } catch (error) {
-    if (!res.headersSent) {
-      res.status(500).send(error.message);
-    }
   }
 });
 
@@ -616,22 +578,6 @@ app.post("/setBlock/:contactId", async (req, res) => {
       await contact.block();
     }
 
-    res.status(200).json({ response: "ok" });
-  } catch (error) {
-    if (!res.headersSent) {
-      res.status(500).send(error.message);
-    }
-  }
-});
-
-app.post("/deleteChat/:contactId", async (req, res) => {
-  try {
-    const contactId = utils.buildContactId(
-      req.params.contactId,
-      req.query.isGroup === "1",
-    );
-    const chat = await client.getChatById(contactId);
-    await chat.delete();
     res.status(200).json({ response: "ok" });
   } catch (error) {
     if (!res.headersSent) {

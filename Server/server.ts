@@ -11,6 +11,10 @@ import * as utils from "./utils";
 import { setUpChatGetters, setUpListGetters } from "./chat";
 
 console.log("[FFmpeg] Using ffmpeg from:", utils.ffmpegPath);
+
+if (!fs.existsSync(utils.ffmpegPath))
+  console.log("[Warning] FFmpeg does not exist!");
+
 ffmpeg.setFfmpegPath(utils.ffmpegPath);
 
 // Initialize Express app
@@ -185,7 +189,12 @@ client.on("qr", async (qr) => {
 
 client.on("ready", () => {
   global.loggedin = 1;
-  console.log("Server A and B are ready.");
+  console.log("The server is ready.");
+});
+
+client.on("authenticated", () => {
+  global.loggedin = 1;
+  console.log("Authenticated");
 });
 
 client.on("disconnected", (reason) => {
@@ -197,6 +206,8 @@ client.on("disconnected", (reason) => {
   ) {
     reInitializeCount++;
     client.initialize();
+  } else {
+    global.loggedin = 0;
   }
 });
 
@@ -210,11 +221,11 @@ app.get("/", async (_, res) => {
 });
 
 app.get("/loggedInYet", (_, res) => {
-  res.send(global.loggedin ? "true" : "false");
+  res.send(global.loggedin === 1 ? "true" : "false");
 });
 
 app.get("/qr", async (_, res) => {
-  res.send(global.loggedin ? "Success" : global.qrDataUrl);
+  res.send(global.loggedin === 1 ? "Success" : global.qrDataUrl);
 });
 
 setUpListGetters(app, client);
@@ -468,7 +479,7 @@ app.post("/sendMessage/:contactId", async (req, res) => {
         .toFormat("mp3")
         .on("end", async () => {
           fs.unlinkSync(inputPath);
-          const media = await MessageMedia.fromFilePath(outputPath);
+          const media = MessageMedia.fromFilePath(outputPath);
           await chat.sendMessage(media, { sendAudioAsVoice: true });
           fs.unlinkSync(outputPath);
         })

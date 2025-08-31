@@ -11,7 +11,10 @@ export function setUpListGetters(app: express.Express, client: Client) {
   app.get("/getChats", async (_, res) => {
     try {
       const allChats = await client.getChats();
-      res.json(allChats.filter((chat) => !chat.isGroup));
+      res.json({
+        chatList: allChats.filter((chat) => !chat.isGroup),
+        groupList: allChats.filter((chat) => chat.isGroup),
+      });
     } catch (error) {
       res.status(500).send("Failed to get chats: " + error.message);
     }
@@ -36,7 +39,7 @@ export function setUpListGetters(app: express.Express, client: Client) {
       const filteredBroadcasts = broadcasts.filter(
         (broadcast) => broadcast.msgs.length > 0,
       );
-      res.json({ broadcastList: filteredBroadcasts });
+      res.json(filteredBroadcasts);
     } catch (error) {
       res.status(500).send("Failed to get broadcasts: " + error.message);
     }
@@ -56,15 +59,6 @@ export function setUpListGetters(app: express.Express, client: Client) {
       res.json(contactList);
     } catch (error) {
       res.status(500).send("Failed to get contacts: " + error.message);
-    }
-  });
-
-  app.get("/getGroups", async (_, res) => {
-    try {
-      const allChats = await client.getChats();
-      res.json(allChats.filter((chat) => chat.isGroup));
-    } catch (error) {
-      res.status(500).send("Failed to get groups: " + error.message);
     }
   });
 

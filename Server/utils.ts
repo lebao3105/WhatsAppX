@@ -6,12 +6,14 @@ import { exec } from "child_process";
 import ffmpeg from "fluent-ffmpeg";
 
 export const SERVER_CONFIG = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "config.json"), "utf-8"),
+  fs.readFileSync(path.join(process.cwd(), "config.json"), "utf-8"),
 );
+
+console.log(`Using ${path.join(process.cwd(), "config.json")}`);
 
 export const ffmpegPath: string =
   !SERVER_CONFIG.ffmpegPath || fs.existsSync(SERVER_CONFIG.ffmpegPath)
-    ? path.join(__dirname, "ffmpeg", "bin", "ffmpeg.exe")
+    ? path.join(process.cwd(), "ffmpeg", "ffmpeg.exe")
     : SERVER_CONFIG.ffmpegPath;
 
 export function buildContactId(id: string, isGroup = false) {
@@ -54,7 +56,7 @@ export async function downloadAndConvertAudio(
         return reject(err);
       }
 
-      const command = `"${global.ffmpegPath}" -i "${tempInputPath}" -acodec libmp3lame "${tempOutputPath}"`;
+      const command = `"${ffmpegPath}" -i "${tempInputPath}" -acodec libmp3lame "${tempOutputPath}"`;
 
       exec(command, (error, _, stderr) => {
         // Always delete the temp input file
@@ -84,7 +86,9 @@ export async function downloadAndConvertAudio(
   });
 }
 
-export async function generateVideoThumbnail(videoBuffer): Promise<string> {
+export async function generateVideoThumbnail(
+  videoBuffer: string | NodeJS.ArrayBufferView,
+): Promise<string> {
   const tempVideoPath = path.join(os.tmpdir(), `tmp_${Date.now()}.mp4`);
   const thumbnailName = `thumbnail_${Date.now()}.png`;
   const thumbnailPath = path.join(os.tmpdir(), thumbnailName);

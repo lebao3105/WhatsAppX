@@ -1,0 +1,8 @@
+{
+  "files": ["server.ts", "utils.ts", "chat.ts"],
+  "compilerOptions": {
+    "module": "CommonJS",
+    "target": "ES2024",
+    "esModuleInterop": true
+  }
+}

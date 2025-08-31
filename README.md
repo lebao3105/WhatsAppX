@@ -7,29 +7,16 @@ This project is currently in beta. Please report bugs or ask for help in bag-xml
 </div>
 
 ## Compilation
-#### Windows
-- In the server folder, enter `npm install -g pkg`
-- Run `build.bat`
-- Download the compiled `ffmpeg` executable [here](https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-lgpl.zip), an `x86_64` .EXE is linked
-- Create an `ffmpeg` folder in the folder with the compiled NodeJS code (app.exe)
-- Transfer the previously downloaded `ffmpeg.exe` and its dependencies to the `ffmpeg` folder
 
-#### MacOS
-- In the server folder, enter `npm install -g pkg`
-- For Intel Macs, run `pkg . --targets node18-macos-x64 --output app-macos`
-- For Apple Silicon Macs, run `pkg . --targets node18-macos-arm64 --output app-macos-arm64`
-- Download the compiled `ffmpeg` executable [here](https://evermeet.cx/ffmpeg/). Make sure to download for the right architecture.
-- Create an `ffmpeg` folder in the folder with the compiled NodeJS code
-- Transfer the previously downloaded `ffmpeg` and its dependencies to the `ffmpeg` folder
-- Run with `./app-macos`.
-
-#### Linux
-- In the server folder, enter `npm install -g pkg`
-- Run `pkg . --targets node18-linux-x64 --output app-linux`
-- Download the compiled `ffmpeg` executable [here](https://johnvansickle.com/ffmpeg/). Make sure to download for the right architecture.
-- Create an `ffmpeg` folder in the folder with the compiled NodeJS code
-- Transfer the previously downloaded `ffmpeg` and its dependencies to the `ffmpeg` folder
-- Run with `./app-linux`.
+- Install Bun
+- Go to Server/ and run `bun build server.ts utils.ts chat.ts --compile`. Add build target & any other flags if needed.
+- Download FFmpeg from:
+  * Windows: https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-lgpl.zip
+  * macOS: https://evermeet.cx/ffmpeg/
+  * Linux: https://johnvansickle.com/ffmpeg/
+- Create `ffmpeg` folder in the folder that has the newly made executable
+- Move the previously downloaded `ffmpeg` and its dependencies into that `ffmpeg` folder
+- Run `server` and profit.
 
 ## Special thanks to...
 - **Gian Luca Russo**: the original developer of this project
@@ -72,10 +59,10 @@ This project is currently in beta. Please report bugs or ask for help in bag-xml
 ## Disclaimers
 This project is **not affiliated** with “WA for Legacy iOS” by Alwin Lubbers, “Meta Platforms Inc.”, or “WhatsApp Inc.”
 
-This is an **unofficial client** for WhatsApp and is **not affiliated with**, **endorsed by**, or **supported** by WhatsApp Inc. in any way.  
+This is an **unofficial client** for WhatsApp and is **not affiliated with**, **endorsed by**, or **supported** by WhatsApp Inc. in any way.
 By using this application, you acknowledge and agree that:
 - **You** are **solely responsible** for the **use** of **your WhatsApp account** with this app.
 - **I** (calvink19) assume **no responsibility** for **any actions** taken by _WhatsApp Inc._ against your account, including (but not limited to) suspension, banning, or data loss.
 
-**Use at your own risk!**  
+**Use at your own risk!**
 If you do not agree with these terms, **do not use this application.** A pop-up is also presented in the iOS application.

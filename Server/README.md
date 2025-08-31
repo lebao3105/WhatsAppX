@@ -77,15 +77,23 @@ Key Features:
 
 ### 2.3 Chat Management
 
+#### Request parameters
+ - IDs are usually un-"serialized" ones (WWebJS's `ContactId::user`)
+ - Booleans are represented as 0 and 1_s.
+
 #### GET `/getChats`
- - Returns: JSON with all chats (individual and groups)
- - Use: Retrieve complete chat list
+ - Returns: JSON with all chats (individual only)
+ - Serialized WWebJS Chat objects
+
+#### GET `/getGroups`
+ - Returns: The same as `/getChats`, but widh groups
+ - Serialized WWebJS Group objects, which are derived from Chat
 
 #### POST `/syncChat/:contactId`
  - Parameters:
     - contactId: chat ID
     - isGroup: boolean (query parameter)
- - Returns: Empty JSON on success
+ - Returns: Status code 200 on success.
  - Use: Sync chat history with server
 
 #### GET `/getChatMessages/:contactId`
@@ -264,7 +272,7 @@ Key Features:
             "response": "ok"
         }
         ```
-        
+
 ### 3.2 Message Protocol
 
 #### Message Format:

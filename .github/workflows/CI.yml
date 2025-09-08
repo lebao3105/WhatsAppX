@@ -32,8 +32,11 @@ jobs:
       
     - run: bun install
       working-directory: Server
+
+    - run: bun update
+      working-directory: Server
       
-    - run: bun build --compile server.ts --bytecode --outfile=WatSup
+    - run: bun build --compile server.ts utils.ts chat.ts --bytecode --outfile=WatSup
       working-directory: Server
     
     - name: Upload build artifact

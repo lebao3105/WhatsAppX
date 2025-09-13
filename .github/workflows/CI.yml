@@ -30,11 +30,7 @@ jobs:
     - name: Setup Bun
       uses: oven-sh/setup-bun@v2
       
-    - run: bun install
-      working-directory: Server
-
-    - run: bun update
-      working-directory: Server
+    - run: cd Server && bun install
       
     - run: cd Server && bun build --compile --bytecode --outfile=WatSup --packages=bundle --server-components --target=bun server.ts utils.ts chat.ts
     

@@ -1,5 +1,5 @@
 {
-  "HOST": "0.0.0.0",
+  "HOST": "192.168.1.46",
   "PORT": 7300,
   "HTTP_PORT": 7301,
   "CHROME_PATH": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"

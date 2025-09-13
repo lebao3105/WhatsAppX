@@ -21,7 +21,7 @@ This documentation covers all features of the WhatsApp server, including HTTP en
     3.5 Connection Management
 4. Event System
 
-## 1. Server Overview
+## Server Overview
 
 The WhatsApp server is built using Node.js with Express for HTTP endpoints and net for TCP socket connections. It uses the whatsapp-web.js library to interface with WhatsApp Web.
 
@@ -32,7 +32,9 @@ Key Features:
  - Full WhatsApp Web feature support
  - HTTP API for remote clients
 
-## 2. HTTP Endpoints
+## HTTP Endpoints
+
+Most routes will return code 200 on success, 500 on failure.
 
 ### 2.1 Authentication & Status
 
@@ -41,84 +43,88 @@ Key Features:
  - Use: Simple server status check
 
 #### GET `/loggedInYet`
- - Returns: "true" or "false" string
+ - Returns: a boolean as a string
  - Use: Check if WhatsApp session is authenticated
 
 #### GET `/qr`
  - Returns: QR code data URL or "Success" if already logged in
  - Use: Get QR code for initial authentication
 
+#### GET `/code` (not implemented)
+ - Same as `/qr` but uses pairing code instead
+
 ### 2.2 Event Handling
 
-#### GET `/getUpdates`
+#### GET `/getUpdates` (not implemented)
  - Parameters:
     - since: timestamp (optional)
  - Returns: JSON with new events since specified timestamp
  - Use: Poll for new events (messages, status changes, etc.)
 
-#### GET `/getUpdatesPolling`
+#### GET `/getUpdatesPolling` (not implemented)
  - Parameters:
     - since: timestamp (optional)
     - timeout: milliseconds (optional, default 5000)
  - Returns: JSON with new events (long polling implementation)
  - Use: More efficient event polling with timeout
 
-#### POST `/testEvent`
- - Returns: JSON with queue status
- - Use: Test event system by adding a test event
-
-#### GET `/queueStatus`
- - Returns: JSON with current event queue status
- - Use: Monitor event queue health
-
-#### GET `/clearQueue`
- - Returns: JSON with operation result
- - Use: Clear all events from queue (debug/maintenance)
-
 ### 2.3 Chat Management
 
 #### Request parameters
  - IDs are usually un-"serialized" ones (WWebJS's `ContactId::user`)
- - Booleans are represented as 0 and 1_s.
+ - Booleans are represented as 0 (false) and 1 (true)
 
 #### GET `/getChats`
  - Returns: JSON with all chats (individual only)
  - Serialized WWebJS Chat objects
 
 #### GET `/getGroups`
- - Returns: The same as `/getChats`, but widh groups
+ - Returns: The same as `/getChats`, but with groups
  - Serialized WWebJS Group objects, which are derived from Chat
 
 #### POST `/syncChat/:contactId`
  - Parameters:
     - contactId: chat ID
     - isGroup: boolean (query parameter)
- - Returns: Status code 200 on success.
+ - Returns: Status code 200 on success
  - Use: Sync chat history with server
 
 #### GET `/getChatMessages/:contactId`
  - Parameters:
     - contactId: chat ID
     - isGroup: boolean (query parameter)
-    - isLight: boolean (query parameter, limits messages)
- - Returns: JSON with all messages in chat
+    - limit: integer, defaults to 100 (query parameter, optional)
+ - Returns: JSON with last `limit` messages in chat
  - Use: Retrieve message history for specific chat
 
-#### POST `/readChat/:contactId`
+#### POST `/ReadChat/:contactId`
  - Parameters:
     - contactId: chat ID
     - isGroup: boolean (query parameter)
  - Returns: JSON with operation status
- - Use: Mark chat as read
+ - Use: Mark chat as read OR not read
 
-#### POST `/deleteChat/:contactId`
+#### POST `/ArchiveChat/:contactId`
+  - Parameters:
+    - contactID
+    - archive: boolean (query parameter)
+  - Use: (un)archives chat
+
+#### POST `/DeleteChat/:contactId`
  - Parameters:
     - contactId: chat ID
     - isGroup: boolean (query parameter)
  - Returns: JSON with operation status
  - Use: Delete chat from list
 
-### Contact Management
+#### POST `/Mute/:contactId`
+  - Parameters:
+    - contactId
+    - mute: boolean (query parameter)
+    - expirationData: string presentation of a specific time&date (query parameter) - optional. If empty and `mute` is true, a permanent mute.
+  - Use: (un)mute a chat
+
+### 2.4 Contact Management
 
 #### GET `/getContacts`
  - Returns: JSON with all contacts
@@ -138,6 +144,24 @@ Key Features:
     - isGroup: boolean (query parameter)
  - Returns: JSON with operation status
  - Use: Block/unblock contact
+
+#### POST `/profileSetName/:name`
+ - Parameters:
+    - name: new display name
+ - Use: Set your own profile name
+
+#### POST `/profileSetStatus/:status`
+ - Parameters:
+    - status: new status text
+ - Use: Set your own profile status message
+
+#### POST `/profileSetPicture/:mediaBase64`
+ - Parameters:
+    - mediaBase64: base64-encoded image
+ - Use: Set your own profile picture
+
+#### POST `/profileDeleteAvatar`
+ - Use: Delete your own profile picture
 
 ### 2.5 Group Management
 
@@ -161,7 +185,18 @@ Key Features:
  - Returns: JSON with operation status
  - Use: Leave specified group
 
-### 2.6 Media Handling
+### 2.6 Broadcast Management
+
+#### GET `/getBroadcasts`
+ - Returns: JSON list of broadcast lists with messages
+ - Use: Retrieve broadcast lists that contain at least one message
+
+#### POST `/seenBroadcast/:messageId`
+ - Parameters:
+    - messageId: broadcast message ID
+ - Use: Mark broadcast message as seen
+
+### 2.7 Media Handling
 
 #### GET `/getAudioData/:audioId`
  - Returns: Converted audio in MP3 format
@@ -179,62 +214,58 @@ Key Features:
  - Returns: PNG thumbnail for video
  - Use: Get preview image for videos
 
-### Message Handling
+### 2.8 Messaging
 
-#### POST /sendMessage/:contactId
+#### POST `/sendMessage/:contactId`
  - Parameters:
-    - contactId: recipient ID
+    - contactId: chat ID
     - isGroup: boolean (query parameter)
- - Body:
-    - messageText: text to send
-    - replyTo: message ID to reply to (optional)
-    - sendAsVoiceNote: boolean (optional)
-    - mediaBase64: base64 media data (optional)
-    - sendAsPhoto: boolean (optional)
+ - Body options:
+    - messageText (string)
+    - replyTo (message ID)
+    - sendAsVoiceNote + mediaBase64
+    - sendAsPhoto + mediaBase64
+    - sendAsVideo + mediaBase64
+    - sendAsSticker + mediaBase64
  - Returns: JSON with operation status
- - Use: Send text/media messages
+ - Use: Send messages and media
 
-#### POST /setTypingStatus/:contactId
+#### POST `/deleteMessage/:messageId`
+ - Parameters:
+    - messageId: message ID
+    - everyone: boolean (query parameter)
+ - Use: Delete a message for self or everyone
+
+#### GET `/getQuotedMessage/:messageId`
+ - Parameters:
+    - messageId: message ID
+ - Returns: JSON with original and quoted message details
+ - Use: Retrieve quoted message content
+
+### 2.9 Presence & Typing State
+
+#### POST `/setTypingStatus/:contactId`
  - Parameters:
     - contactId: chat ID
     - isGroup: boolean (query parameter)
     - isVoiceNote: boolean (query parameter)
- - Returns: JSON with operation status
- - Use: Set typing/recording indicator
+ - Use: Set typing or recording state in a chat
 
-#### POST /clearState/:contactId
+#### POST `/clearState/:contactId`
  - Parameters:
     - contactId: chat ID
     - isGroup: boolean (query parameter)
- - Returns: JSON with operation status
- - Use: Clear chat state indicators
+ - Use: Clear typing/recording state
 
-#### POST /seenBroadcast/:messageId
- - Returns: JSON with operation status
- - Use: Mark broadcast message as seen
+### 2.10 Session Management
 
-#### GET /getQuotedMessage/:messageId
- - Returns: JSON with quoted message details
- - Use: Retrieve message being replied to
-
-#### POST /deleteMessage/:messageId/:everyone
+#### POST `/setStatusInfo/:statusMsg`
  - Parameters:
-    - messageId: message ID to delete
-    - everyone: 2 for everyone, other for just you
- - Returns: JSON with operation status
- - Use: Delete messages (optionally for everyone)
+    - statusMsg: new status string
+ - Use: Update account status message
 
-#### POST /setStatusInfo/:statusMsg
- - Returns: JSON with operation status
- - Use: Set user's status message
-
-#### POST /setMute/:contactId/:muteLevel
- - Parameters:
-    - contactId: chat ID
-    - muteLevel: -1=unmute, 0=8h, 1=1w, 2=1y
-    - isGroup: boolean (query parameter)
- - Returns: JSON with operation status
- - Use: Mute/unmute chats
+#### ALL `/logout`
+ - Use: Log out from the WhatsApp session
 
 ## TCP Server
 

@@ -9,6 +9,7 @@ import os from "os";
 import QRCode from "qrcode";
 import * as utils from "./utils";
 import { setUpChatGetters, setUpListGetters } from "./chat";
+import { exit } from "node:process";
 
 console.log("[FFmpeg] Using ffmpeg from: ", utils.ffmpegPath);
 console.log("Using browser from: ", utils.SERVER_CONFIG.CHROME_PATH);
@@ -139,6 +140,15 @@ function setupWhatsAppEventListeners(socket: Socket) {
         response: "REVOKE_MESSAGE",
       }),
     );
+  });
+
+  client.on("message_create", async (message) => {
+    socket.write(JSON.stringify(message));
+  });
+
+  client.on("message_edit", async (message, newBody) => {
+    console.log(newBody);
+    socket.write(newBody);
   });
 
   client.on("group_join", async (notification) => {
@@ -596,7 +606,7 @@ app.post("/setBlock/:contactId", async (req, res) => {
   }
 });
 
-app.post("/readChat/:contactId", async (req, res) => {
+app.post("/ReadChat/:contactId", async (req, res) => {
   try {
     const isGroup = req.query.isGroup === "1";
     const rawId = req.params.contactId;
@@ -612,12 +622,13 @@ app.post("/readChat/:contactId", async (req, res) => {
       await chat.sendSeen();
       console.log("Marked as seen!");
     } else {
-      console.log("No unread messages.");
+      await client.markChatUnread(contactId);
+      console.log("Marked as unread.");
     }
 
     await client.resetState();
 
-    res.status(200).json({ response: "ok" });
+    res.status(200);
   } catch (error) {
     console.error("Error in readChat:", error);
     if (!res.headersSent) {
@@ -759,6 +770,7 @@ const socketServer = net.createServer((socket) => {
     await client.destroy();
     socket.destroy();
     console.log("socket ended");
+    exit(0);
   });
 
   // Handle socket error
@@ -770,6 +782,6 @@ const socketServer = net.createServer((socket) => {
 });
 
 // Start servers
-socketServer.listen(utils.SERVER_CONFIG.PORT, utils.SERVER_CONFIG.HOST);
 client.initialize();
+socketServer.listen(utils.SERVER_CONFIG.PORT, utils.SERVER_CONFIG.HOST);
 app.listen(utils.SERVER_CONFIG.HTTP_PORT);

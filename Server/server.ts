@@ -1,5 +1,11 @@
 import express from "express";
-import { Client, MessageMedia, LocalAuth, GroupChat } from "whatsapp-web.js";
+import {
+  Client,
+  MessageMedia,
+  LocalAuth,
+  GroupChat,
+  Events,
+} from "whatsapp-web.js";
 import net, { Socket } from "node:net";
 import ffmpeg from "fluent-ffmpeg";
 import { exec } from "child_process";
@@ -27,6 +33,7 @@ app.use(express.json({ limit: "16mb" }));
 app.use(express.urlencoded({ limit: "16mb", extended: true }));
 
 let reInitializeCount = 1;
+var latestUpdate: string = "{}";
 
 const client = new Client({
   puppeteer: {
@@ -83,103 +90,91 @@ function reconnect(socket: Socket) {
 }
 
 function setupWhatsAppEventListeners(socket: Socket) {
-  client.setMaxListeners(16);
-
   client.on("message", async (message) => {
-    if (message.broadcast === true) {
-      socket.write(
-        JSON.stringify({
-          sender: "wspl-server",
-          response: "NEW_BROADCAST_NOTI",
-        }),
-      );
-    } else {
-      socket.write(
-        JSON.stringify({
-          sender: "wspl-server",
-          // NEW_MESSAGE
-          response: "NEW_MESSAGE_NOTI",
-          body: {
-            msgBody: message.body,
-            from: message.from.split("@")[0],
-            author: message.author ? message.author.split("@")[0] : "",
-            type: message.type,
-          },
-        }),
-      );
-    }
+    latestUpdate = JSON.stringify({
+      tp: Events.MESSAGE_RECEIVED,
+      msg: message,
+      forChat: (await message.getChat()).id._serialized,
+    });
   });
 
   client.on("message_ack", async (message, ack) => {
-    socket.write(
-      JSON.stringify({
-        sender: "wspl-server",
-        response: "ACK_MESSAGE",
-        body: {
-          from: message.from.split("@")[0],
-          msgId: message.id,
-          ack: ack,
-        },
-      }),
-    );
+    latestUpdate = JSON.stringify({
+      ack: ack,
+      id: message.id._serialized,
+      tp: Events.MESSAGE_ACK,
+      forChat: (await message.getChat()).id._serialized,
+    });
   });
 
   client.on("message_revoke_me", async (message) => {
-    socket.write(
-      JSON.stringify({
-        sender: "wspl-server",
-        response: "REVOKE_MESSAGE",
-      }),
-    );
-  });
-
-  client.on("message_revoke_everyone", async (message, revokedMessage) => {
-    socket.write(
-      JSON.stringify({
-        sender: "wspl-server",
-        response: "REVOKE_MESSAGE",
-      }),
-    );
+    latestUpdate = JSON.stringify({
+      tp: Events.MESSAGE_REVOKED_ME,
+      id: message.id._serialized,
+      forChat: (await message.getChat()).id._serialized,
+    });
   });
 
   client.on("message_create", async (message) => {
-    socket.write(JSON.stringify(message));
+    latestUpdate = JSON.stringify({
+      tp: Events.MESSAGE_CREATE,
+      msg: message,
+      forChat: (await message.getChat()).id._serialized,
+    });
   });
 
-  client.on("message_edit", async (message, newBody) => {
-    console.log(newBody);
-    socket.write(newBody);
+  client.on("message_edit", async (message, newbody, _) => {
+    latestUpdate = JSON.stringify({
+      tp: Events.MESSAGE_EDIT,
+      id: message.id._serialized,
+      newbody: newbody,
+      forChat: (await message.getChat()).id._serialized,
+    });
   });
 
-  client.on("group_join", async (notification) => {
-    socket.write(
-      JSON.stringify({
-        sender: "wspl-server",
-        response: "NEW_MESSAGE",
-      }),
-    );
+  client.on("message_revoke_everyone", async (_, revokedMessage) => {
+    latestUpdate = JSON.stringify({
+      tp: Events.MESSAGE_REVOKED_EVERYONE,
+      id: revokedMessage.id._serialized,
+      forChat: (await revokedMessage.getChat()).id._serialized,
+    });
   });
 
-  client.on("group_update", async (notification) => {
-    socket.write(
-      JSON.stringify({
-        sender: "wspl-server",
-        response: "NEW_MESSAGE",
-      }),
-    );
+  client.on("group_join", (notification) => {
+    latestUpdate = JSON.stringify({
+      tp: Events.GROUP_JOIN,
+      notif: notification,
+    });
   });
 
-  client.on("chat_state_changed", ({ chatId, chatState }) => {
-    socket.write(
-      JSON.stringify({
-        sender: "wspl-server",
-        response: "CONTACT_CHANGE_STATE",
-        body: {
-          status: chatState,
-          from: chatId.split("@")[0],
-        },
-      }),
-    );
+  client.on("group_update", (notification) => {
+    latestUpdate = JSON.stringify({
+      tp: Events.GROUP_UPDATE,
+      notif: notification,
+    });
+  });
+
+  client.on("group_leave", (notification) => {
+    latestUpdate = JSON.stringify({
+      tp: Events.GROUP_LEAVE,
+      notif: notification,
+    });
+  });
+
+  client.on("chat_archived", (chat, currState, _) => {
+    // ignore the previous state
+    latestUpdate = JSON.stringify({
+      tp: "chat_archived",
+      id: chat.id._serialized,
+      isArchived: currState,
+    });
+  });
+
+  client.on("chat_removed", (chat) => {
+    latestUpdate = JSON.stringify({
+      tp: "chat_removed",
+      id: chat.id._serialized,
+    });
   });
 }
 
@@ -235,6 +230,10 @@ app.get("/loggedInYet", (_, res) => {
 
 app.get("/qr", async (_, res) => {
   res.send(global.loggedin === 1 ? "Success" : global.qrDataUrl);
+});
+
+app.get("/latestUpdate", (_, res) => {
+  res.status(200).json(latestUpdate);
 });
 
 setUpListGetters(app, client);
@@ -733,6 +732,7 @@ const socketServer = net.createServer((socket) => {
   );
 
   // Set up WhatsApp client event listeners for this socket
+  client.setMaxListeners(16);
   setupWhatsAppEventListeners(socket);
 
   // Handle socket data

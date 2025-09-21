@@ -9,14 +9,16 @@ This project is currently in beta. Please report bugs or ask for help in bag-xml
 ## Compilation
 
 - Install Bun
-- Go to Server/ and run `bun build server.ts utils.ts chat.ts --compile`. Add build target & any other flags if needed.
+- Go to `Server/`
 - Download FFmpeg from:
   * Windows: https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-lgpl.zip
   * macOS: https://evermeet.cx/ffmpeg/
   * Linux: https://johnvansickle.com/ffmpeg/
 - Create `ffmpeg` folder in the folder that has the newly made executable
 - Move the previously downloaded `ffmpeg` and its dependencies into that `ffmpeg` folder
-- Run `server` and profit.
+- Run `bun install`
+- Run `bun server.ts`
+- Profit
 
 ## Special thanks to...
 - **Gian Luca Russo**: the original developer of this project

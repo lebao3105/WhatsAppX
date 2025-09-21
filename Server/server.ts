@@ -6,7 +6,6 @@ import {
   GroupChat,
   Events,
 } from "whatsapp-web.js";
-import net, { Socket } from "node:net";
 import ffmpeg from "fluent-ffmpeg";
 import { exec } from "child_process";
 import path from "path";
@@ -15,7 +14,6 @@ import os from "os";
 import QRCode from "qrcode";
 import * as utils from "./utils";
 import { setUpChatGetters, setUpListGetters } from "./chat";
-import { exit } from "node:process";
 
 console.log("[FFmpeg] Using ffmpeg from: ", utils.ffmpegPath);
 console.log("Using browser from: ", utils.SERVER_CONFIG.CHROME_PATH);
@@ -74,22 +72,7 @@ const client = new Client({
   authStrategy: new LocalAuth(),
 });
 
-const TOKENS = {
-  SERVER: "3qGT_%78Dtr|&*7ufZoO",
-  CLIENT: "vC.I)Xsfe(;p4YB6E5@y",
-};
-
-// Utility functions
-function reconnect(socket: Socket) {
-  console.log(`Attempting to reconnect with ${socket.address}`);
-  setTimeout(() => {
-    socket.connect(utils.SERVER_CONFIG.PORT, utils.SERVER_CONFIG.HOST, () => {
-      console.log(`socket reconnected`);
-    });
-  }, 5000);
-}
-
-function setupWhatsAppEventListeners(socket: Socket) {
+function setupWhatsAppEventListeners() {
   client.on("message", async (message) => {
     latestUpdate = JSON.stringify({
       tp: Events.MESSAGE_RECEIVED,
@@ -719,69 +702,10 @@ app.all("/logout", async (req, res) => {
   }
 });
 
-// Socket server setup
-const socketServer = net.createServer((socket) => {
-  socket.setEncoding("utf-8");
-
-  // Send server token
-  socket.write(
-    JSON.stringify({
-      sender: "wspl-server",
-      token: TOKENS.SERVER,
-    }),
-  );
-
-  // Set up WhatsApp client event listeners for this socket
-  client.setMaxListeners(16);
-  setupWhatsAppEventListeners(socket);
-
-  // Handle socket data
-  socket.on("data", (data) => {
-    try {
-      const parsedData = JSON.parse(data.toString("utf-8"));
-      if (
-        parsedData.sender === "wspl-client" &&
-        parsedData.token === TOKENS.CLIENT
-      ) {
-        // clients.push(socket);
-        socket.write(
-          JSON.stringify({
-            sender: "wspl-server",
-            response: "ok",
-          }),
-        );
-      } else {
-        socket.write(
-          JSON.stringify({
-            sender: "wspl-server",
-            response: "reject",
-          }),
-        );
-        socket.destroy();
-      }
-    } catch (error) {
-      console.error("Error parsing socket data:", error);
-      socket.destroy();
-    }
-  });
-
-  // Handle socket end
-  socket.on("end", async () => {
-    await client.destroy();
-    socket.destroy();
-    console.log("socket ended");
-    exit(0);
-  });
-
-  // Handle socket error
-  socket.on("error", (error) => {
-    console.error(error);
-    console.log("reconnecting...");
-    reconnect(socket);
-  });
-});
+// Set up WhatsApp client event listeners for this socket
+client.setMaxListeners(16);
+setupWhatsAppEventListeners();
 
 // Start servers
 client.initialize();
-socketServer.listen(utils.SERVER_CONFIG.PORT, utils.SERVER_CONFIG.HOST);
 app.listen(utils.SERVER_CONFIG.HTTP_PORT);

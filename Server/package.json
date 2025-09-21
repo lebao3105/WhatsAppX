@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "tsc -p tsconfig.json && node server.js",
-    "dev": "nodemon server.js"
+    "start-b": "bun server.ts"
   },
   "dependencies": {
     "axios": "^1.12.1",
